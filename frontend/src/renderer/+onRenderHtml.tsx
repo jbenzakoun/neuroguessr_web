@@ -27,7 +27,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext) => {
   const PageComponent = Page as React.ComponentType<any>
   // Important: Use StaticRouter for server-side rendering
   const pageHtml = renderToString(
-    <PageContextProvider pageContext={pageContext}>
+    <PageContextProvider pageContext={pageContext as any}>
       <PageLayout pageContext={pageContext}>
           <PageComponent />
       </PageLayout>
