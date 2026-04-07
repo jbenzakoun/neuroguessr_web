@@ -347,6 +347,19 @@ export const database_init = async () => {
             `;
         });
 
+            // News table
+            await sql`
+                CREATE TABLE IF NOT EXISTS news (
+                    id SERIAL PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    active BOOLEAN NOT NULL DEFAULT TRUE,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+            `;
+            await sql`CREATE INDEX IF NOT EXISTS idx_news_active ON news(active, created_at DESC);`;
+
         // Allow NULL user_id for challenge metadata records
         await sql.begin(async sql => {
             await sql`
@@ -371,9 +384,9 @@ export const database_init = async () => {
             const salt = await bcrypt.genSalt(Number(config.salt));
             const hashedPassword = await bcrypt.hash("test", salt);
             await sql`
-                INSERT INTO users (username, firstname, lastname, email, password, verified)
-                VALUES ('test', 'Test', 'User', '', ${hashedPassword}, ${true})
-                ON CONFLICT (username) DO NOTHING
+                INSERT INTO users (username, firstname, lastname, email, password, verified, admin)
+                VALUES ('test', 'Test', 'User', '', ${hashedPassword}, ${true}, ${false})
+                ON CONFLICT (username) DO UPDATE SET admin = false
             `;
             logger.info("Test user added successfully.");
         }

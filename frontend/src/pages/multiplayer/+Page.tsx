@@ -77,11 +77,14 @@ const MultiPlayer = ({
   const [forceDisplayUpdate, setForceDisplayUpdate] = useState<number>(0);
   const isFirstGuess = useRef<boolean>(true);
   const hasAnswered = useRef<boolean>(false);
+  const sessionNameRef = useRef<string>("");
+  const sessionDateRef = useRef<string>("");
   const [showMultiplayerOverlay, setShowMultiplayerOverlay] = useState<boolean>(false)
   const multiplayerOverlayRef = useRef<HTMLDivElement>(null);
   const [hasWon, setHasWon] = useState<boolean>(false)
   const isGuessCooldownRef = useRef<boolean>(false);
   const [countdownRemaining, setCountdownRemaining] = useState<number | null>(null);
+  const countdownTotal = useRef<number>(5);
   const [classicChallengeId, setClassicChallengeId] = useState<number | null>(null);
   const [classicChallengeRankings, setClassicChallengeRankings] = useState<Array<{username: string, score: number, ranking?: number}>>([]);
   const [classicChallengeTotalParticipants, setClassicChallengeTotalParticipants] = useState<number>(0);
@@ -92,7 +95,7 @@ const MultiPlayer = ({
   const joiningInProgressRef = useRef<boolean>(false);
   const pastRegionIdCounter = useRef<number>(0);
   const currentPastRegionId = useRef<number | null>(null);
-  const isReplayMode = useState<boolean>(!askedSessionCode && !!pageContext?.urlParsed.search["replay_multi"]);
+  const isReplayMode = !askedSessionCode && (!!pageContext?.urlParsed.search["replay_multi"] || !!pageContext?.urlParsed.search["replay_session"]);
 
   const handleConnect = () => {
     setError(null);
@@ -162,44 +165,43 @@ const MultiPlayer = ({
     anonUsernameRef.current = anonUsername;
   }, [anonUsername])
 
-  // Handle replay_multi URL parameter
+  // Handle replay_multi and replay_session URL parameters — runs only once
+  const replayMultiId = pageContext?.urlParsed.search["replay_multi"];
+  const replaySessionId = pageContext?.urlParsed.search["replay_session"];
+  const replayId = replayMultiId || replaySessionId;
+  const replayLoadedRef = useRef(false);
+
   useEffect(() => {
-    const replayMultiId = pageContext?.urlParsed.search["replay_multi"]
-    
-    if (replayMultiId) {
-      if(!isLoggedIn || !authToken){
-        setShowAuthRequired(true);
-        return;
-      } 
-      // Fetch replay data from backend
-      fetch(`/api/multi/replay-challenge/${replayMultiId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      })
+    if (!replayId || replayLoadedRef.current) return;
+    if (!isLoggedIn || !authToken) {
+      setShowAuthRequired(true);
+      return;
+    }
+    replayLoadedRef.current = true;
+
+    const url = replayMultiId
+      ? `/api/multi/replay-challenge/${replayMultiId}`
+      : `/api/multi/replay-session/${replaySessionId}`;
+
+    fetch(url, { headers: { 'Authorization': `Bearer ${authToken}` } })
       .then(res => {
-        if (!res.ok) {
-          throw new Error(`Failed to fetch replay data: ${res.statusText}`);
-        }
+        if (!res.ok) throw new Error(`Failed to fetch replay data: ${res.statusText}`);
         return res.json();
       })
       .then(data => {
-        const { pastRegions, atlas, blindMode } = data;
-        
-        // Set up the game for replay mode
+        const { pastRegions, atlas, blindMode, sessionName, sessionDate } = data;
+        setHasEnded(true);
         setPastRegions(pastRegions);
         setAskedAtlas({atlas, blindMode});
-        setHasEnded(true);
-        
-        // Start the game directly in replay mode
-        consoleLog('verbose', `Starting replay mode for challenge ${replayMultiId} with ${pastRegions.length} regions`);
+        if (sessionName) sessionNameRef.current = sessionName;
+        if (sessionDate) sessionDateRef.current = sessionDate;
+        consoleLog('verbose', `Starting replay mode for ${replayId} with ${pastRegions.length} regions`);
       })
       .catch(err => {
         console.error('Error loading replay data:', err);
         setError(err.message || 'Failed to load replay data');
       });
-    }
-  }, [isLoggedIn, authToken, setPastRegions, setAskedAtlas]);
+  }, [replayId, isLoggedIn, authToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const joinLobby = async (inputCode: string) => {
     if (isConnected || joiningInProgressRef.current) return;
@@ -298,6 +300,7 @@ const MultiPlayer = ({
       if (data.command.action === 'countdown') {
         // Handle countdown command
         const duration = data.command.duration || 5; // Default to 5 seconds
+        countdownTotal.current = duration;
         setCountdownRemaining(duration);
         
         // Start countdown timer
@@ -329,6 +332,7 @@ const MultiPlayer = ({
             blindMode: data.command.blindMode || false
           })
           cleanHeader();
+          setHeaderTime(`${t("loading-atlas")} ${data.command.atlas}`);
         }
         startStepCountdown(`${t("loading-atlas")} ${data.command.atlas}`, data.command.duration);
       } else if (data.command === 'preload-atlas') {
@@ -799,29 +803,34 @@ const MultiPlayer = ({
 
     if (isConnected && !isGameRunning) {
       if(countdownRemaining !== null && countdownRemaining >= 0){
+        const circumference = 2 * Math.PI * 44;
+        const strokeDashoffset = circumference * (1 - (countdownRemaining / countdownTotal.current));
         return (
           <div className="waiting-content">
               <div className="countdown-display">
-                <h3>{t("game_starting_in") || "Game starting in..."}</h3>
-                <div className="countdown-number" style={{ 
-                  fontSize: '48px', 
-                  fontWeight: 'bold', 
-                  color: '#ff6b6b',
-                  textAlign: 'center',
-                  margin: '20px 0'
-                }}>
-                  {formatTime({ms:countdownRemaining*1000})}
+                <p className="countdown-label">{t("game_starting_in") || "Game starting in..."}</p>
+                <div className="countdown-ring-container">
+                  <svg className="countdown-ring-svg" viewBox="0 0 100 100">
+                    <circle className="countdown-ring-bg" cx="50" cy="50" r="44" />
+                    <circle
+                      className="countdown-ring-progress"
+                      cx="50" cy="50" r="44"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                    />
+                  </svg>
+                  <span className="countdown-number">{countdownRemaining}</span>
                 </div>
-                {!isClassicChallenge && <div>
-                  <h4>{t("players_in_lobby")}: {lobbyUsers.length}</h4>
-                  <ul>
+                {!isClassicChallenge && lobbyUsers.length > 0 && (
+                  <div className="countdown-players-box">
+                    <p className="countdown-players-title">{t("players_in_lobby")}: {lobbyUsers.length}</p>
+                    <ul className="countdown-players-list">
                       {lobbyUsers.map((user, index) => (
-                        <li key={`waiting-user-${index}`}>
-                          {user}
-                        </li>
+                        <li key={`waiting-user-${index}`}>{user}</li>
                       ))}
-                  </ul>
-                </div>}
+                    </ul>
+                  </div>
+                )}
               </div>
             {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
           </div>
@@ -866,7 +875,7 @@ const MultiPlayer = ({
     <>
       <title>{title}</title>
       
-      <BrainViewer alternateContent={renderWaitingContent({error})} />
+      <BrainViewer alternateContent={renderWaitingContent({error})} sessionName={sessionNameRef.current} sessionDate={sessionDateRef.current} />
       
       {isGameRunning && (
         <div className="multiplayer-score-display">
@@ -931,119 +940,90 @@ const MultiPlayer = ({
       {showMultiplayerOverlay && <div id="time-attack-end-overlay" className="time-attack-overlay">
         <div className="overlay-content" ref={multiplayerOverlayRef}>
           {isClassicChallenge ? (
-            // Classic Challenge Ending Screen
             <>
               <h2>{t("classic_challenge_ended_title") || "Classic Challenge Completed"}</h2>
-              
-              {/* User's Score */}
-              <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                <p style={{ fontSize: '24px', fontWeight: 'bold' }}>
-                  {t("your_score") || "Your Score"}: {playerScores[isLoggedIn ? userUsername : anonUsername] || 0}
-                </p>
+              <div className="overlay-score-block">
+                <span className="overlay-score-value">
+                  {playerScores[isLoggedIn ? userUsername : anonUsername] || 0}
+                </span>
+                <span className="overlay-score-label">{t("your_score") || "Your Score"}</span>
               </div>
 
-              {/* Ranking or Publish Prompt */}
               {(() => {
                 const currentUser = isLoggedIn ? userUsername : anonUsername;
                 const userScore = playerScores[currentUser] || 0;
-                
                 if (userPublishToLeaderboard === true) {
-                  // User publishes to leaderboard - show their ranking from the rankings array
                   const existingRanking = classicChallengeRankings.find(r => r.username === currentUser);
-                  
                   let rankingsToUse = classicChallengeRankings;
                   let totalParticipants = classicChallengeTotalParticipants;
-                  
                   if (!existingRanking) {
-                    // Add user's score to rankings if not already included
                     rankingsToUse = [...classicChallengeRankings, { username: currentUser, score: userScore }];
-                    // Sort by score descending, then by username for tie-breaking
-                    rankingsToUse.sort((a, b) => {
-                      if (b.score !== a.score) return b.score - a.score;
-                      return a.username.localeCompare(b.username);
-                    });
-                    // Add ranking numbers
+                    rankingsToUse.sort((a, b) => b.score !== a.score ? b.score - a.score : a.username.localeCompare(b.username));
                     rankingsToUse = rankingsToUse.map((r, index) => ({ ...r, ranking: index + 1 }));
                     totalParticipants += 1;
                   }
-                  
                   const userRanking = rankingsToUse.find(r => r.username === currentUser);
-                  
                   return (
-                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                      <p style={{ fontSize: '20px' }}>
-                        {t("your_temp_ranking") || "Your Temporary Ranking"}: #{userRanking?.ranking || '?'} / {totalParticipants}
-                      </p>
-                      <p style={{ fontSize: '16px', color: '#666' }}>
-                        {t("total_participants") || "Total Participants"}: {totalParticipants}
-                      </p>
+                    <div className="overlay-ranking">
+                      <p><strong>#{userRanking?.ranking || '?'}</strong> / {totalParticipants} {t("total_participants") || "participants"}</p>
                     </div>
                   );
                 } else {
-                  // User doesn't publish to leaderboard
-                  return (
-                    <PublishToLeaderboardBox forRank={true}/>
-                  );
+                  return <PublishToLeaderboardBox forRank={true}/>;
                 }
               })()}
 
-              {/* Publish to Leaderboard Box for users who haven't set preference */}
-              {isLoggedIn && !isClassicChallenge && userPublishToLeaderboard === null && <PublishToLeaderboardBox />}
-              
-              {/* Challenge Results Button */}
               {classicChallengeId && (
-                <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                  <a 
-                    href={`/challenge-results/${classicChallengeId}`}
-                    className="join-multiplayer-button"
-                    style={{ display: 'inline-block', textDecoration: 'none' }}
-                  >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                  <a href={`/challenge-results/${classicChallengeId}`} className="overlay-challenge-link">
                     {t("view_challenge_results") || "View Challenge Results"}
                   </a>
-                  <div style={{ marginTop: 12 }}>
-                    <ChallengeEmailOptIn challengeId={classicChallengeId} />
-                  </div>
+                  <ChallengeEmailOptIn challengeId={classicChallengeId} />
                 </div>
               )}
             </>
           ) : (
-            // Regular Multiplayer Ending Screen
             <>
-              <h2>{t("multiplayer_ended_title")}</h2>
-              <p><span>{t("multiplayer_ended_score")}</span></p>
-              <ul style={{ fontSize: 20, listStyle: 'none', padding: 0 }}>
+              <h2>{hasWon ? t("multiplayer_you_won") : t("multiplayer_you_lost")}</h2>
+              <div className="overlay-score-block">
+                <span className="overlay-score-value">
+                  {playerScores[isLoggedIn ? userUsername : anonUsername] ?? 0}
+                </span>
+                <span className="overlay-score-label">{t("your_score") || "Your Score"}</span>
+              </div>
+              <ul className="overlay-players-list">
                 {[...lobbyUsers]
                   .sort((a, b) => {
-                    const scoreA = playerScores[a];
-                    const scoreB = playerScores[b];
-                    if (scoreA === undefined && scoreB === undefined) return 0;
-                    if (scoreA === undefined) return 1;
-                    if (scoreB === undefined) return -1;
-                    return scoreB - scoreA;
+                    const sa = playerScores[a]; const sb = playerScores[b];
+                    if (sa === undefined && sb === undefined) return 0;
+                    if (sa === undefined) return 1; if (sb === undefined) return -1;
+                    return sb - sa;
                   })
-                  .map((u) => (
-                    <li key={u} style={(u === userUsername || u === anonUsername) ? { color: (hasWon?'green':'red'), fontWeight: 'bold' } : {}}>
-                      {u}{playerScores[u] !== undefined ? " " + playerScores[u] : ""}
-                    </li>
-                  ))
-                }
+                  .map((u) => {
+                    const isMe = u === userUsername || u === anonUsername;
+                    return (
+                      <li key={u} className={isMe ? `is-me ${hasWon ? 'won' : 'lost'}` : ''}>
+                        <span>{u}</span>
+                        <span>{playerScores[u] ?? '—'}</span>
+                      </li>
+                    );
+                  })}
               </ul>
-              <h2>{hasWon?t("multiplayer_you_won"):t("multiplayer_you_lost")}</h2>
               {isLoggedIn && userPublishToLeaderboard === null && <PublishToLeaderboardBox />}
             </>
           )}
 
           <div className="overlay-buttons">
-            <button 
-              className="eye-button" 
+            <button
+              className="eye-button"
               onClick={() => setShowMultiplayerOverlay(false)}
-              data-umami-event="show review button" 
+              data-umami-event="show review button"
               data-umami-event-overlay="time-attack"
             >
-              <i className="fas fa-eye"></i>
+              {t("review_button") || "Review"}
             </button>
             <a id="go-back-menu-button-time-attack" className="home-button" href="/welcome/multiplayer">
-              <i className="fas fa-home"></i>
+              {t("home_button")}
             </a>
           </div>
         </div>

@@ -1,24 +1,27 @@
-.join-multiplayer-box{
+.join-multiplayer-box {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.join-multiplayer-button, .start-classic-challenge-button {
-    background-color: rgb(63, 109, 159);
-    color: white;
-    font-size: 1.125rem;
+.join-multiplayer-button {
+    background-color: var(--text-main);
+    color: var(--bg-page);
+    font-size: 1rem;
     font-weight: 600;
-    padding: 1rem 2rem;
-    border: 1px solid #808588;
-    border-radius: 1rem;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    transition: background-color 0.2s;
 }
-.start-classic-challenge-warning{
-    margin-top: 15px;
-    font-size: 0.875rem;
-    color: #ffcc00;
+
+.join-multiplayer-button:hover {
+    background-color: var(--text-sub);
 }
-.multiplayer-suggest-login{
+
+.multiplayer-suggest-login {
     margin-top: 25px;
 }
 
@@ -29,7 +32,7 @@
     justify-content: center;
     min-height: 400px;
     text-align: center;
-    color: white;
+    color: var(--text-main);
     padding: 2rem;
     width: 100%;
 }
@@ -37,13 +40,17 @@
 .waiting-content h3 {
     margin-bottom: 1rem;
     font-size: 1.5rem;
-    color: #fff;
+    color: var(--text-main);
+    font-weight: 400;
+    font-family: 'Open Sans', sans-serif;
 }
 
 .waiting-content p {
     margin-bottom: 1rem;
-    font-size: 1.125rem;
-    color: #ccc;
+    font-size: 1.1rem;
+    color: var(--text-sub);
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
 }
 
 .waiting-content ul {
@@ -57,13 +64,16 @@
 }
 
 .waiting-content li {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
+    background: var(--bg-card);
+    border-radius: 9999px;
+    padding: 6px 18px;
+    font-size: 0.95rem;
+    color: var(--text-sub);
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
 }
 
-.waiting-display{
+.waiting-display {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -75,71 +85,130 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 300px;
+    gap: 24px;
     width: 100%;
-    animation: pulse 1s infinite;
+}
+
+.countdown-label {
+    font-size: 1rem;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: var(--text-sub);
+    margin: 0;
+    letter-spacing: 0.03em;
+}
+
+.countdown-ring-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.countdown-ring-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(90deg) scaleX(-1);
+}
+
+.countdown-ring-bg {
+    fill: none;
+    stroke: var(--bg-card);
+    stroke-width: 5;
+}
+
+.countdown-ring-progress {
+    fill: none;
+    stroke: var(--text-main);
+    stroke-width: 5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.9s linear;
 }
 
 .countdown-number {
-    font-size: 4rem !important;
-    font-weight: bold !important;
-    color: #ff6b6b !important;
-    text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
-    animation: countdown-pulse 1s infinite;
-    margin: 2rem 0 !important;
+    font-size: 3rem !important;
+    font-weight: 300 !important;
+    color: var(--text-main) !important;
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
 }
 
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
+.countdown-players-box {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 16px 24px;
+    max-width: 380px;
+    width: 100%;
 }
 
-@keyframes countdown-pulse {
-    0% { 
-        transform: scale(1); 
-        text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
-    }
-    50% { 
-        transform: scale(1.1); 
-        text-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
-    }
-    100% { 
-        transform: scale(1); 
-        text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
-    }
+.countdown-players-title {
+    font-size: 0.85rem;
+    font-weight: 400;
+    font-family: 'Open Sans', sans-serif;
+    color: var(--text-sub);
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.countdown-players-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.countdown-players-list li {
+    background: var(--bg-card-hover);
+    border-radius: 9999px;
+    padding: 4px 14px;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
 }
 
 .multiplayer-score-display {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: var(--bg-card);
+    color: var(--text-main);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     z-index: 1000;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
 }
 
 .current-user-score {
     padding: 15px 20px;
     text-align: center;
     font-size: 18px;
-    font-weight: 500;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 400;
+    font-family: 'Open Sans', sans-serif;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .current-user-score .position {
-    font-size: 14px;
-    color: #ccc;
+    font-size: 13px;
+    color: var(--text-muted);
     margin-top: 5px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
 }
 
 .score-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--border-color);
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
@@ -181,72 +250,64 @@
 
 .standings-title {
     margin: 0 0 12px 0;
-    font-size: 16px;
-    color: #fff;
+    font-size: 0.85rem;
+    color: var(--text-muted);
     text-align: center;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: 'Open Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .score-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     max-height: 300px;
     overflow-y: auto;
 }
 
-.score-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.score-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-}
-
-.score-list::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-}
-
-.score-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.4);
-}
+.score-list::-webkit-scrollbar { width: 4px; }
+.score-list::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 2px; }
+.score-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+.score-list::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .score-item {
     display: grid;
     grid-template-columns: 30px 1fr auto;
     gap: 10px;
     align-items: center;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
     transition: background-color 0.2s ease;
     border: 1px solid transparent;
 }
 
 .score-item.current-user {
-    background-color: rgba(74, 144, 226, 0.3);
-    border: 1px solid rgba(74, 144, 226, 0.5);
+    background-color: var(--bg-card-hover);
+    border: 1px solid var(--border-color);
 }
 
 .score-item .position {
-    font-weight: bold;
-    color: #ffd700;
+    font-weight: 600;
+    color: var(--text-muted);
     text-align: center;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .score-item .username {
-    color: #fff;
-    font-weight: 500;
+    color: var(--text-main);
+    font-weight: 400;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .score-item .score {
-    color: #4ade80;
-    font-weight: bold;
-    font-size: 14px;
+    color: var(--success-color, #4ade80);
+    font-weight: 600;
+    font-size: 13px;
 }
