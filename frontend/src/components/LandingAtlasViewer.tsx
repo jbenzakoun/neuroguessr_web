@@ -25,14 +25,12 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
         setError(null);
 
         // Create new Niivue instance with multiplanar render view
-        const nv = new Niivue({
-          opts: {
-            isRadiologicalConvention: true,
-            yoke3Dto2DZoom: true,
-            crosshairGap: 0,
-            multiplanarShowRender: 1,
-          },
-        });
+        const nv = new Niivue();
+
+        nv.opts.isRadiologicalConvention = true; 
+        nv.opts.yoke3Dto2DZoom = true;
+        nv.opts.crosshairGap = 0;
+        nv.opts.multiplanarShowRender = 1;
 
         // Attach to canvas
         await nv.attachToCanvas(canvasRef.current);
@@ -62,7 +60,7 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
           try {
             const jsonUrl = `/atlas/descr/en/${atlas.json}`;
             const colorMapData = await fetchJSON(jsonUrl);
-            if (colorMapData && colorMapData.lut) {
+            if (colorMapData) {
               // Apply colormap with labels for distinct colors
               atlasData.setColormapLabel(colorMapData);
             } else {
@@ -103,61 +101,20 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
       // Cleanup
       if (niivueRef.current) {
         try {
-          niivueRef.current.removeAllVolumes();
+          for (let i = 0; i < niivueRef.current.volumes.length; i++) {
+              if(niivueRef.current && niivueRef.current.volumes && niivueRef.current.volumes[i]) {
+                const volume = niivueRef.current.volumes[i];
+                if (volume) {
+                  niivueRef.current.removeVolume(volume);
+                }
+              }
+          }
         } catch (e) {
           console.error('Error cleaning up Niivue:', e);
         }
       }
     };
   }, [effectiveAtlasKey]);
-
-  // Handle mouse navigation
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!niivueRef.current) return;
-    const nv = niivueRef.current as any;
-    nv.mouseDown = true;
-    nv.lastX = e.clientX;
-    nv.lastY = e.clientY;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!niivueRef.current) return;
-    const nv = niivueRef.current as any;
-    if (!nv.mouseDown) return;
-
-    const deltaX = e.clientX - (nv.lastX || 0);
-    const deltaY = e.clientY - (nv.lastY || 0);
-
-    // Rotate scene based on mouse movement
-    if (nv.scene && nv.scene.azimuth !== undefined) {
-      nv.scene.azimuth += deltaX * 0.5;
-      nv.scene.elevation += deltaY * 0.5;
-      nv.drawScene();
-    }
-
-    nv.lastX = e.clientX;
-    nv.lastY = e.clientY;
-  };
-
-  const handleMouseUp = () => {
-    if (!niivueRef.current) return;
-    const nv = niivueRef.current as any;
-    nv.mouseDown = false;
-  };
-
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    if (!niivueRef.current) return;
-    e.preventDefault();
-
-    const nv = niivueRef.current;
-    const zoomSpeed = 0.02;
-    const direction = e.deltaY > 0 ? -1 : 1;
-
-    if (nv.scene && nv.scene.pan2Dxyzmm) {
-      nv.scene.pan2Dxyzmm[3] = Math.max(0.3, Math.min(8, (nv.scene.pan2Dxyzmm[3] || 1) + direction * zoomSpeed));
-      nv.drawScene();
-    }
-  };
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -205,11 +162,6 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
       )}
       <canvas
         ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
         style={{
           width: '100%',
           height: '100%',
