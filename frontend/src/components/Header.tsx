@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 
 function Header() {
     const {currentLanguage, t, handleChangeLanguage,
-    isLoggedIn, isMobileView,
+    isLoggedIn,
     headerMessages, headerStreak, headerTime, headerErrors, headerScore,
     pageContext, showTooltip, hideTooltip } = useApp();
 
