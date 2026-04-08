@@ -49,7 +49,7 @@ const externalGameCommandsSchema = Joi.array().items(
     action: Joi.string().valid("load-atlas", "guess", "countdown").required(),
     atlas: Joi.string().optional(),
     regionId: Joi.number().integer().optional(),
-    duration: Joi.number().integer().min(5).when('action', {
+    duration: Joi.number().integer().min(1).when('action', {
       is: 'countdown',
       then: Joi.optional(),
       otherwise: Joi.required()
@@ -979,7 +979,8 @@ export async function handleLaunchGame(data: {
         .map(info => info.userName)
         .filter(Boolean);
         
-      if (userList.length <= 1) {
+      const isDev = process.env.NODE_ENV !== 'production';
+      if (!isDev && userList.length <= 1) {
         emitToUser(sessionCode, userName, "error", {message: "Insufficient users in lobby"})
         return {success: false};
       }
@@ -1615,11 +1616,116 @@ export async function replayMultiSession (req: Request, res: Response) {
     const atlas = clicks[0].atlas;
     const blindMode = clicks[0].blind_mode;
 
+    // Get challenge name and creation date from multi_sessions
+    const challenge = await sql`
+        SELECT name, start_date FROM multi_sessions
+        WHERE id = ${challengeId}
+        LIMIT 1
+    `;
+
+    const sessionName = challenge.length > 0 && challenge[0].name ? challenge[0].name : `Challenge ${challengeId}`;
+    const sessionDate = challenge.length > 0 ? challenge[0].start_date : null;
+
     res.json({
         pastRegions,
         atlas,
-        blindMode
+        blindMode,
+        sessionName,
+        sessionDate
     });
+}
+
+// Replay a multiplayer session by finished_session id
+export async function replayMultiSessionById(req: Request, res: Response) {
+    const { sessionId } = req.params;
+    const userId = (req as any).user.id;
+
+    // Verify the session belongs to this user
+    const session = await sql`
+        SELECT id, atlas, blind_mode, score, correct, created_at FROM finished_sessions
+        WHERE id = ${sessionId} AND user_id = ${userId} AND mode = 'multiplayer'
+        LIMIT 1
+    `;
+    if (session.length === 0) {
+        return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const sessionAtlas: string = session[0].atlas;
+    const sessionScore: number = session[0].score;
+    const sessionCorrect: number = session[0].correct;
+
+    // Find the matching multiplayer_session_id directly in individual_clicks
+    // by matching user + atlas + total score + correct count
+    const matchResult = await sql`
+        SELECT multiplayer_session_id
+        FROM individual_clicks
+        WHERE user_id = ${userId}
+          AND atlas = ${sessionAtlas}
+          AND multiplayer_session_id IS NOT NULL
+        GROUP BY multiplayer_session_id
+        HAVING SUM(score_increment) = ${sessionScore}
+           AND SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) = ${sessionCorrect}
+        ORDER BY multiplayer_session_id DESC
+        LIMIT 1
+    `;
+
+    const multiSessionId = matchResult.length > 0 ? matchResult[0].multiplayer_session_id : null;
+
+    if (!multiSessionId) {
+        return res.status(404).json({ error: 'No replay data found' });
+    }
+
+    const clicks = await sql`
+        SELECT
+            command_index, atlas, blind_mode, region_id,
+            clicked_x, clicked_y, clicked_z,
+            clicked_x_mm, clicked_y_mm, clicked_z_mm,
+            nearest_center_x_mm, nearest_center_y_mm, nearest_center_z_mm,
+            boundary_point_x_mm, boundary_point_y_mm, boundary_point_z_mm,
+            distance_to_target, is_correct, score_increment, time_taken, has_clicked
+        FROM individual_clicks
+        WHERE user_id = ${userId}
+          AND multiplayer_session_id = ${multiSessionId}
+        ORDER BY command_index ASC
+    `;
+
+    if (clicks.length === 0) {
+        return res.status(404).json({ error: 'No replay data found' });
+    }
+
+    const pastRegions: PastRegion[] = clicks.map((click: any, index: number) => ({
+        id: index,
+        regionId: click.region_id,
+        atlas: click.atlas,
+        target: click.region_id,
+        clickedPosition: click.has_clicked ? {
+            mm: [click.clicked_x_mm, click.clicked_y_mm, click.clicked_z_mm],
+            vox: [click.clicked_x, click.clicked_y, click.clicked_z]
+        } : undefined,
+        regionCenter: click.nearest_center_x_mm !== null ? [
+            click.nearest_center_x_mm,
+            click.nearest_center_y_mm,
+            click.nearest_center_z_mm
+        ] : undefined,
+        regionBoundary: click.boundary_point_x_mm !== null ? [
+            click.boundary_point_x_mm,
+            click.boundary_point_y_mm,
+            click.boundary_point_z_mm
+        ] : undefined,
+        distance: click.distance_to_target,
+        isCorrect: click.is_correct,
+        score: click.score_increment,
+        scoreIncrement: click.score_increment
+    }));
+
+    const atlas = clicks[0].atlas;
+    const blindMode = clicks[0].blind_mode;
+    const sessionDate = session[0].created_at;
+
+    // Use multiplayer_session_id as sessionName (numeric ID)
+    const sessionName = `Session ${multiSessionId}`;
+
+    res.json({ pastRegions, atlas, blindMode, sessionName, sessionDate });
 }
 
 // Get multiplayer session info for meta tag generation
@@ -1660,6 +1766,80 @@ export const getMultiplayerSessionStartDate = async (req: Request, res: Response
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// Replay a single player session (streak/time-attack) by finished_session id
+export async function replaySingleSessionById(req: Request, res: Response) {
+    const { sessionId } = req.params;
+    const userId = (req as any).user.id;
+
+    try {
+        // Verify the session belongs to this user and is a singleplayer mode
+        const session = await sql`
+            SELECT id, mode, atlas, blind_mode, score, correct, incorrect, created_at FROM finished_sessions
+            WHERE id = ${sessionId} AND user_id = ${userId} AND mode IN ('streak', 'time-attack')
+            LIMIT 1
+        `;
+        if (session.length === 0) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+
+        const sessionMode: string = session[0].mode;
+        const sessionDate = session[0].created_at;
+
+        // Get individual clicks linked to this session via singleplayer_session_id
+        const clicks = await sql`
+            SELECT
+                command_index, atlas, blind_mode, region_id,
+                clicked_x, clicked_y, clicked_z,
+                clicked_x_mm, clicked_y_mm, clicked_z_mm,
+                nearest_center_x_mm, nearest_center_y_mm, nearest_center_z_mm,
+                boundary_point_x_mm, boundary_point_y_mm, boundary_point_z_mm,
+                distance_to_target, is_correct, score_increment, time_taken, has_clicked
+            FROM individual_clicks
+            WHERE singleplayer_session_id = ${sessionId}
+            ORDER BY command_index ASC
+        `;
+
+        if (clicks.length === 0) {
+            return res.status(404).json({ error: 'No replay data found' });
+        }
+
+        const pastRegions: PastRegion[] = clicks.map((click: any, index: number) => ({
+            id: index,
+            regionId: click.region_id,
+            atlas: click.atlas,
+            target: click.region_id,
+            clickedPosition: click.has_clicked ? {
+                mm: [click.clicked_x_mm, click.clicked_y_mm, click.clicked_z_mm],
+                vox: [click.clicked_x, click.clicked_y, click.clicked_z]
+            } : undefined,
+            regionCenter: click.nearest_center_x_mm !== null ? [
+                click.nearest_center_x_mm,
+                click.nearest_center_y_mm,
+                click.nearest_center_z_mm
+            ] : undefined,
+            regionBoundary: click.boundary_point_x_mm !== null ? [
+                click.boundary_point_x_mm,
+                click.boundary_point_y_mm,
+                click.boundary_point_z_mm
+            ] : undefined,
+            distance: click.distance_to_target,
+            isCorrect: click.is_correct,
+            score: click.score_increment,
+            scoreIncrement: click.score_increment
+        }));
+
+        const atlas = clicks[0].atlas;
+        const blindMode = clicks[0].blind_mode;
+        const modeLabel = sessionMode === 'time-attack' ? 'Time Attack' : 'Streak';
+        const sessionName = `${modeLabel}`;
+
+        res.json({ pastRegions, atlas, blindMode, sessionName, sessionDate });
+    } catch (error) {
+        logger.error("Error replaying single player session:", error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 setupInactiveGameCheck();
 

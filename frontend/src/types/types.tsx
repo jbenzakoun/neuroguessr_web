@@ -10,6 +10,8 @@ export type DisplayOptions = {
   radiologicalOrientation: boolean;
   displayAtlas: boolean;
   displayOpacity: number;
+  brainOpacity: number;
+  clipPlane: number; // -1 (fully clipped) to 1 (no clip), passed as depth to setClipPlane
 }
 
 export interface ExternalGameCommands {
@@ -74,6 +76,7 @@ export type PastRegion = {
   regionCenter?: number[] | undefined;
   regionBoundary?: number[] | undefined;
   atlas: string;
+  clickedRegionName?: string;
 }
 
 export type ImageMetadata = {

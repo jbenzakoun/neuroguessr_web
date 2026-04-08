@@ -40,6 +40,12 @@ export const defineNiiOptions = (myniivue: any, myAtlasProxy: AtlasImageProxy | 
             }
         }
         myniivue.opts.isRadiologicalConvention = viewerOptions.radiologicalOrientation;
+        // Brain (volume 0) opacity
+        if (myniivue.volumes.length > 0) {
+            myniivue.setOpacity(0, viewerOptions.brainOpacity ?? 1.0);
+        }
+        // Clip plane
+        myniivue.setClipPlane([viewerOptions.clipPlane ?? 2, 270, 0]);
         myniivue.updateGLVolume();
     }
 }
