@@ -119,6 +119,26 @@ function Header() {
                                                     onMouseEnter={(e) => handleInfoHover(e, firstMsg.infoContent)}
                                                     onMouseLeave={handleInfoLeave}>ℹ️</span>
                                             )}
+                                            {firstMsg.infoSource && (
+                                                firstMsg.infoSource.includes('https://doi.org') ? (
+                                                    <a 
+                                                        href={firstMsg.infoSource}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="header-info-icon"
+                                                        style={{ cursor: 'pointer', textDecoration: 'none' }}
+                                                        onMouseEnter={(e) => handleInfoHover(e, firstMsg.infoSource)}
+                                                        onMouseLeave={handleInfoLeave}>
+                                                        📖
+                                                    </a>
+                                                ) : (
+                                                    <span className="header-info-icon"
+                                                        onMouseEnter={(e) => handleInfoHover(e, firstMsg.infoSource)}
+                                                        onMouseLeave={handleInfoLeave}>
+                                                        📖
+                                                    </span>
+                                                )
+                                            )}
                                         </p>
                                     )}
                                 </div>
