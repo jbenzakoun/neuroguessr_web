@@ -266,6 +266,8 @@ export function GameProvider({
         }
         return () => {
             const niivueInstance = niivue;
+            setAskedRegion(null)
+            setAskedAtlas(undefined)
             cleanGameCallbackRef.current()
             // Clean up Niivue properly
             if (niivueInstance) {

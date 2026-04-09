@@ -3,6 +3,7 @@ import { Niivue } from '@niivue/niivue';
 import atlasFiles from '../utils/atlas_files';
 import { loadNIfTIFromCache } from '../utils/nifti_cache';
 import { fetchJSON } from '../utils/helper_nii';
+import { useApp } from '../context/AppContext';
 
 interface LandingAtlasViewerProps {
   atlasKey?: string;
@@ -14,9 +15,14 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { preloadedBackgroundMNI, nvimageModule } = useApp();
+
   const effectiveAtlasKey = atlasKey && atlasFiles[atlasKey] ? atlasKey : 'harvard-oxford';
 
   useEffect(() => {
+    // Wait until AppContext has initialized the niivue module and MNI background
+    if (!nvimageModule || !preloadedBackgroundMNI) return;
+
     const loadAtlas = async () => {
       try {
         if (!canvasRef.current) return;
@@ -36,25 +42,22 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
         await nv.attachToCanvas(canvasRef.current);
         niivueRef.current = nv;
 
-        // Load MNI background
-        const mniUrl = '/atlas/mni152_downsampled.nii.gz';
-        const mniData = await loadNIfTIFromCache(mniUrl);
-        if (mniData) {
-          nv.addVolume(mniData);
-        }
+        // Use preloaded MNI background from AppContext (already cached)
+        nv.addVolume(preloadedBackgroundMNI);
 
-        // Load the selected atlas
+        // Load the selected atlas from cache (niftiCache initialized by AppContext)
         const atlas = atlasFiles[effectiveAtlasKey];
         if (!atlas) {
           setError('Atlas not found');
           return;
         }
 
-        // Load atlas NIfTI file with correct path prefix
         const atlasUrl = `/atlas/nii/${atlas.nii}`;
         const atlasData = await loadNIfTIFromCache(atlasUrl);
         if (atlasData) {
-          nv.addVolume(atlasData);
+          // Clone to avoid mutating the shared cached NVImage
+          const atlasClone = atlasData.clone();
+          nv.addVolume(atlasClone);
 
           // Load and apply colormap for the atlas with proper labels
           try {
@@ -62,17 +65,17 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
             const colorMapData = await fetchJSON(jsonUrl);
             if (colorMapData) {
               // Apply colormap with labels for distinct colors
-              atlasData.setColormapLabel(colorMapData);
+              atlasClone.setColormapLabel(colorMapData);
             } else {
-              nv.setColormap(atlasData.id, 'hsv');
+              nv.setColormap(atlasClone.id, 'hsv');
             }
           } catch (err) {
             console.warn('Could not load colormap:', err);
-            nv.setColormap(atlasData.id, 'hsv');
+            nv.setColormap(atlasClone.id, 'hsv');
           }
           // Boost min/max to push colors into brighter range
-          atlasData.cal_min = 0;
-          atlasData.cal_max = 48;
+          atlasClone.cal_min = 0;
+          atlasClone.cal_max = 48;
           nv.updateGLVolume();
         }
 
@@ -114,7 +117,7 @@ const LandingAtlasViewer: React.FC<LandingAtlasViewerProps> = ({ atlasKey = 'har
         }
       }
     };
-  }, [effectiveAtlasKey]);
+  }, [effectiveAtlasKey, preloadedBackgroundMNI, nvimageModule]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>

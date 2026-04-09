@@ -169,8 +169,8 @@ export function MultiBox() {
                 <div className="multiplayer-auth-widget">
                     <h3>{t("sign_in")}</h3>
                     <p>{t("login_to_create_games") || "Sign in to create and manage multiplayer games"}</p>
-                    <a className="play-button enabled" href="/login">{t("sign_in")}</a>
-                    <a href="/register" className="multiplayer-register-link">{t("create_account") || "Créer un compte"}</a>
+                    <a className="play-button enabled" href={`/login?redirect=welcome/multiplayer`}>{t("sign_in")}</a>
+                    <a href={`/register?redirect=welcome/multiplayer`} className="multiplayer-register-link">{t("create_account") || "Créer un compte"}</a>
                 </div>
             </>}
         </div>
