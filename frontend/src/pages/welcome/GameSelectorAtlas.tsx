@@ -26,6 +26,9 @@ export const GameSelectorAtlas = () => {
   const [blindMode, setBlindMode] = useState(false);
   const parts = pageContext.urlPathname.split('/');
   const welcomeSubPage = parts[2] || 'singleplayer';
+  const defaultCategory = parts[3] || "";
+  const defaultAtlas = parts[4] || "";
+  const defaultMode = parts[5] || "";
 
   const handleInfoHover = (e: React.MouseEvent<HTMLSpanElement>, infoText: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -41,21 +44,36 @@ export const GameSelectorAtlas = () => {
   useEffect(() => {
     if (isMultiCreate) {
       // In multiplayer-create mode, pre-select the first category so all atlases are visible immediately
-      setSelectedCategory(atlasCategories[0] || "");
+      const autoCategory = atlasCategories[0] || ""
+      setSelectedCategory(autoCategory);
+      window.history.pushState(null, '', `/welcome/multiplayer-create/${autoCategory}`);
     } else {
-      setSelectedCategory("");
+      setSelectedCategory(defaultCategory);
     }
+    setSelectedAtlas(defaultAtlas);
+    setSelectedMode(defaultMode);
+  }, []);
+
+  const handleCategorySelection = (category: string) => {
+    setSelectedCategory(category);
     setSelectedAtlas("");
     setSelectedMode("");
-  }, []);
+    window.history.pushState(null, '', `/welcome/${isMultiCreate ? 'multiplayer-create' : 'singleplayer'}/${category}`);
+  }
 
   const handleAtlasSelection = (atlasKey: string) => {
     setSelectedAtlas(atlasKey);
+    window.history.pushState(null, '', `/welcome/${isMultiCreate ? 'multiplayer-create' : 'singleplayer'}/${selectedCategory}/${atlasKey}`);
     try {
       preloadAtlas(atlasKey);
       prefetchAtlasJSON(atlasKey);
     } catch (error) { console.error(error); }
   };
+
+  const handleModeSelection = (mode: string) => {
+    setSelectedMode(mode);
+    window.history.pushState(null, '', `/welcome/singleplayer/${selectedCategory}/${selectedAtlas}/${mode}`);
+  }
 
   const handlePlay = () => {
     if(selectedAtlas && selectedMode){
@@ -63,6 +81,17 @@ export const GameSelectorAtlas = () => {
         navigate(url);
     }
   };
+
+  useEffect(() => {
+    const handler = () => {
+      const parts = window.location.pathname.split('/');
+      setSelectedCategory(parts[3] || "");
+      setSelectedAtlas(parts[4] || "");
+      setSelectedMode(parts[5] || "");
+    };
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, [setSelectedCategory, setSelectedAtlas, setSelectedMode]);
 
   // --- 1. GRID VIEW ---
   if (!selectedCategory || selectedCategory === "") {
@@ -76,7 +105,7 @@ export const GameSelectorAtlas = () => {
               <button
                 key={category}
                 className="category-list-item"
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => handleCategorySelection(category)}
               >
                 <span>{t(category)}</span>
                 <span className="card-arrow">→</span>
@@ -95,20 +124,20 @@ export const GameSelectorAtlas = () => {
             <button
               key={category}
               className="category-card"
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleCategorySelection(category)}
             >
               <div className="card-image-wrapper">
                 <img
                   src={categoryImages[category] || categoryImages["default"]}
                   alt={category}
                   className="card-image card-image-base"
-                  onError={(e) => {e.currentTarget.src = categoryImages["default"]}}
+                  onError={(e) => {e.currentTarget.src = categoryImages["default"] || ""}}
                 />
                 <img
-                  src={(categoryImages[category] || categoryImages["default"]).replace('.png', '_colored.png')}
+                  src={(categoryImages[category] || categoryImages["default"] || "").replace('.png', '_colored.png')}
                   alt={category}
                   className="card-image card-image-colored"
-                  onError={(e) => {e.style.display = 'none'}}
+                  onError={(e) => {(e.currentTarget as HTMLImageElement).style.display = 'none'}}
                 />
               </div>
               <div className="card-content">
@@ -132,7 +161,7 @@ export const GameSelectorAtlas = () => {
             <button
               key={category}
               className={`mc-atlas-cat-btn ${selectedCategory === category ? "selected" : ""}`}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleCategorySelection(category)}
             >
               {t(category)}
             </button>
@@ -168,7 +197,7 @@ export const GameSelectorAtlas = () => {
   return (
     <div className="atlas-detail-container fade-in">
       <div className="detail-header">
-        <button className="back-button" onClick={() => setSelectedCategory("")}>
+        <button className="back-button" onClick={() => handleCategorySelection("")}>
           ← {t("back_to_categories")}
         </button>
         <h2>{t(selectedCategory)}</h2>
@@ -226,7 +255,7 @@ export const GameSelectorAtlas = () => {
             <div className="mode-list-grid">
                <button
                   className={`mode-option-card ${selectedMode === 'navigation' ? 'selected' : ''}`}
-                  onClick={() => setSelectedMode('navigation')}
+                  onClick={() => handleModeSelection('navigation')}
                >
                   <img src="/interface/boussole.png" alt="Nav" className="mode-icon" />
                   <div className="mode-info"><h4>{t("navigation_mode")}</h4></div>
@@ -234,7 +263,7 @@ export const GameSelectorAtlas = () => {
 
                <button
                   className={`mode-option-card ${selectedMode === 'practice' ? 'selected' : ''}`}
-                  onClick={() => setSelectedMode('practice')}
+                  onClick={() => handleModeSelection('practice')}
                >
                   <img src="/interface/practice.png" alt="Prac" className="mode-icon" />
                   <div className="mode-info"><h4>{t("practice_mode")}</h4></div>
@@ -242,7 +271,7 @@ export const GameSelectorAtlas = () => {
 
                <button
                   className={`mode-option-card ${selectedMode === 'streak' ? 'selected' : ''}`}
-                  onClick={() => setSelectedMode('streak')}
+                  onClick={() => handleModeSelection('streak')}
                >
                   <img src="/interface/flame.png" alt="Strk" className="mode-icon" />
                   <div className="mode-info"><h4>{t("streak_mode")}</h4></div>
@@ -250,7 +279,7 @@ export const GameSelectorAtlas = () => {
 
                <button
                   className={`mode-option-card ${selectedMode === 'time-attack' ? 'selected' : ''}`}
-                  onClick={() => setSelectedMode('time-attack')}
+                  onClick={() => handleModeSelection('time-attack')}
                >
                   <img src="/interface/chronometer.png" alt="Time" className="mode-icon" />
                   <div className="mode-info"><h4>{t("time_attack_mode")}</h4></div>

@@ -535,7 +535,11 @@ export function AppProvider({ children, pageContext }: { children: React.ReactNo
     setAuthToken("");
     setIsLoggedIn(false);
     refreshNextChallenge(null);
-    if(typeof window !== 'undefined') window.location.href = '/welcome';
+    if(typeof window !== 'undefined' && 
+      (!window.location.href.includes("/welcome") || 
+      window.location.href.includes("multiplayer-create"))) {
+      window.location.href = '/welcome';
+    }
   };
   
   const activateGuestMode = () => {

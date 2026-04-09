@@ -126,6 +126,29 @@ function SinglePlayer({
         }
     }, [isConnected]);
 
+
+    useEffect(() => {
+        const handler = () => {
+            const parts = window.location.pathname.split('/');
+            if(gameMode === 'navigation' && parts.length >= 4 && atlasRef.current){
+                if(parts[3] && parts[3] != atlasRef.current.atlas){
+                    setAskedAtlas({atlas: parts[3], blindMode});
+                    setHighlightedRegion(parts[4] !== undefined ? parseInt(parts[4]) : null);
+                } else if(parts[3] === atlasRef.current.atlas){
+                    if(parts[4] !== undefined){
+                        setHighlightedRegion(parseInt(parts[4]));
+                        highlightWrapper(parseInt(parts[4]), true, true);
+                    } else {
+                        setHighlightedRegion(null);
+                        unHighlight();
+                    }
+                }
+            }
+        };
+        window.addEventListener('popstate', handler);
+        return () => window.removeEventListener('popstate', handler);
+    }, []);
+
     // Handle replay mode for single player — runs only once when replaySessionId is known
     const replayLoadedRef = useRef(false);
     useEffect(() => {

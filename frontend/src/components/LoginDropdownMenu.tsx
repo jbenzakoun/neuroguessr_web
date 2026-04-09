@@ -6,9 +6,7 @@ function LoginDropdownMenu() {
     const { t, userFirstName, userLastName, userIsAdmin, logout, currentLanguage, handleChangeLanguage } = useApp();
     const [isVisibleDropdown, setIsVisibleDropdown] = useState<boolean>(false);
     const dropdownMenuRef = useRef<HTMLDivElement>(null);
-
-    const initials = ((userFirstName?.[0] || '') + (userLastName?.[0] || '')).toUpperCase() || '?';
-    const closeMenuTimeoutRef = useRef<NodeJS.Timeout>();
+    const closeMenuTimeoutRef = useRef<NodeJS.Timeout|null>(null);
 
     useEffect(() => {
         const handleClick = (event: MouseEvent) => {
