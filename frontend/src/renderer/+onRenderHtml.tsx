@@ -189,8 +189,6 @@ const customHeader = config.customHeaderScript ? dangerouslySkipEscape(config.cu
       window.__NEEDS_LANGUAGE_SWITCH__ = storedLang && storedLang !== "fr";
     })();
   </script>
-  <script async defer src="https://cdn.jsdelivr.net/gh/altcha-org/altcha@main/dist/altcha.min.js" type="module"></script>
-  <script async defer src="https://cdn.jsdelivr.net/gh/altcha-org/altcha/dist_i18n/fr-fr.min.js" type="module"></script>
 </head>
 
 <body>
