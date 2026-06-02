@@ -123,7 +123,21 @@ export function PopupStack() {
           <div className="popup-info-body">
             <span className="popup-info-label">{t ? t("more_details") : "En savoir plus"}</span>
             <p className="popup-info-content">{infoContent}</p>
-            {infoSource && <p className="popup-info-source">{infoSource}</p>}
+            {infoSource && infoSource.length > 0 && (
+              <div className="popup-info-sources">
+                {infoSource.map((source, idx) => {
+                  const href = source.doi ? (source.doi.startsWith('http') ? source.doi : `https://doi.org/${source.doi}`) : undefined;
+                  const citation = `${source.auteur} (${source.year}) — ${source.journal}`;
+                  return href ? (
+                    <a key={idx} className="popup-info-source" href={href} target="_blank" rel="noopener noreferrer">
+                      📖 {citation}
+                    </a>
+                  ) : (
+                    <p key={idx} className="popup-info-source">📖 {citation}</p>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

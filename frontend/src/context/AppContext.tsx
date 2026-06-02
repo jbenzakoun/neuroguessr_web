@@ -16,6 +16,13 @@ type NVImageConstructor = {
   loadFromUrl(options: { url: string }): Promise<NVImage>;
 }
 
+type SourceElement = {
+  auteur: string;
+  journal: string;
+  year: string;
+  doi: string;
+}
+
 // Header message type
 export type HeaderMessage = {
   id: string;
@@ -28,7 +35,7 @@ export type HeaderMessage = {
   colorDuration?: number | undefined; // in milliseconds
   colorAddedAt?: number | undefined;
   infoContent?: string | undefined; // Optional additional info content for tooltips or details
-  infoSource?: string | undefined; // Optional source or reference for the message content
+  infoSource?: SourceElement[] | undefined; // Optional source or reference for the message content
 };
 
 export type AddHeaderMessageOptions = {
@@ -40,7 +47,7 @@ export type AddHeaderMessageOptions = {
   colorDuration?: number; // in milliseconds, duration after which color fades out
   forceClear?: boolean; // if true, clears all existing messages before adding
   infoContent?: string | undefined; // Optional additional info content for tooltips or details
-  infoSource?: string | undefined; // Optional source or reference for the message content
+  infoSource?: SourceElement[] | undefined; // Optional source or reference for the message content
 };
 
 // Tooltip type

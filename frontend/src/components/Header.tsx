@@ -119,26 +119,29 @@ function Header() {
                                                     onMouseEnter={(e) => handleInfoHover(e, firstMsg.infoContent)}
                                                     onMouseLeave={handleInfoLeave}>ℹ️</span>
                                             )}
-                                            {firstMsg.infoSource && (
-                                                firstMsg.infoSource.includes('https://doi.org') ? (
-                                                    <a 
-                                                        href={firstMsg.infoSource}
+                                            {firstMsg.infoSource && firstMsg.infoSource.length > 0 && firstMsg.infoSource.map((source, idx) => {
+                                                const tooltipText = `${source.auteur} (${source.year}) — ${source.journal}`;
+                                                const href = source.doi ? (source.doi.startsWith('http') ? source.doi : `https://doi.org/${source.doi}`) : undefined;
+                                                return href ? (
+                                                    <a
+                                                        key={idx}
+                                                        href={href}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="header-info-icon"
                                                         style={{ cursor: 'pointer', textDecoration: 'none' }}
-                                                        onMouseEnter={(e) => handleInfoHover(e, firstMsg.infoSource)}
+                                                        onMouseEnter={(e) => handleInfoHover(e, tooltipText)}
                                                         onMouseLeave={handleInfoLeave}>
                                                         📖
                                                     </a>
                                                 ) : (
-                                                    <span className="header-info-icon"
-                                                        onMouseEnter={(e) => handleInfoHover(e, firstMsg.infoSource)}
+                                                    <span key={idx} className="header-info-icon"
+                                                        onMouseEnter={(e) => handleInfoHover(e, tooltipText)}
                                                         onMouseLeave={handleInfoLeave}>
                                                         📖
                                                     </span>
-                                                )
-                                            )}
+                                                );
+                                            })}
                                         </p>
                                     )}
                                 </div>
@@ -150,11 +153,29 @@ function Header() {
                                                 onMouseEnter={(e) => handleInfoHover(e, msg.infoContent)}
                                                 onMouseLeave={handleInfoLeave}>ℹ️</span>
                                         )}
-                                        {msg.infoSource && (
-                                            <span className="header-info-icon"
-                                                onMouseEnter={(e) => handleInfoHover(e, msg.infoSource)}
-                                                onMouseLeave={handleInfoLeave}>📖</span>
-                                        )}
+                                        {msg.infoSource && msg.infoSource.length > 0 && msg.infoSource.map((source, idx) => {
+                                            const tooltipText = `${source.auteur} (${source.year}) — ${source.journal}`;
+                                            const href = source.doi ? (source.doi.startsWith('http') ? source.doi : `https://doi.org/${source.doi}`) : undefined;
+                                            return href ? (
+                                                <a
+                                                    key={idx}
+                                                    href={href}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="header-info-icon"
+                                                    style={{ cursor: 'pointer', textDecoration: 'none' }}
+                                                    onMouseEnter={(e) => handleInfoHover(e, tooltipText)}
+                                                    onMouseLeave={handleInfoLeave}>
+                                                    📖
+                                                </a>
+                                            ) : (
+                                                <span key={idx} className="header-info-icon"
+                                                    onMouseEnter={(e) => handleInfoHover(e, tooltipText)}
+                                                    onMouseLeave={handleInfoLeave}>
+                                                    📖
+                                                </span>
+                                            );
+                                        })}
                                     </p>
                                 ))}
                             </>);
