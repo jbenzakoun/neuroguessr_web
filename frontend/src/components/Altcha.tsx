@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 're
 import { useApp } from '../context/AppContext'
 import "altcha"
 import type {} from 'altcha/types/react' // Import types for altcha-react
-import type { WidgetAttributes, WidgetMethods } from 'altcha/types'
 
 interface AltchaProps {
   onStateChange?: (ev: Event | CustomEvent) => void

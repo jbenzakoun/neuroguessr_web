@@ -1,4 +1,5 @@
 import { createChallenge, verifySolution } from 'altcha-lib';
+import type { Payload } from 'altcha-lib';
 import configJson from '../config.json' with { type: "json" };
 import { Request, Response } from 'express';
 import { logger } from './logging.ts';
@@ -26,16 +27,17 @@ export const generateChallenge = async (req: Request, res: Response) => {
 };
 
 
-export const verifyAltcha = async (payload:any) => {
+export const verifyAltcha = async (payload: string) => {
   try {
+    const decoded = JSON.parse(Buffer.from(payload, 'base64').toString('utf8')) as Payload;
     const result = await verifySolution({
-      challenge: payload.challenge,
-      solution: payload.solution,
+      challenge: decoded.challenge,
+      solution: decoded.solution,
       deriveKey,
       hmacKeySignatureSecret: configJson.altcha_secret,
       hmacSignatureSecret: configJson.altcha_secret
     });
-    return result
+    return result.verified;
   } catch (error) {
     return false;
   }
