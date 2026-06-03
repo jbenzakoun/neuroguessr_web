@@ -16,7 +16,8 @@ const categoryImages: Record<string, string> = {
 };
 
 export const GameSelectorAtlas = () => {
-  const { t, preloadAtlas, showTooltip, hideTooltip, pageContext } = useApp();
+  const { t, preloadAtlas, showTooltip, hideTooltip, pageContext, 
+    isMobileView, setIsMobileView } = useApp();
   const { 
     selectedAtlas, setSelectedAtlas, 
     selectedCategory, setSelectedCategory,
@@ -42,6 +43,12 @@ export const GameSelectorAtlas = () => {
   const isMultiCreate = welcomeSubPage === 'multiplayer-create';
 
   useEffect(() => {
+    const checkMobile = () => {
+        const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
+        setIsMobileView(isMobile);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
     if (isMultiCreate) {
       // In multiplayer-create mode, pre-select the first category so all atlases are visible immediately
       const autoCategory = atlasCategories[0] || ""
@@ -206,99 +213,111 @@ export const GameSelectorAtlas = () => {
       <div className="detail-content-split">
 
         {/* COLONNE GAUCHE : LISTE ATLAS */}
-        <div className="column-atlas">
-          <div className="column-title">{t("select_atlas")}</div>
-          <div className="atlas-list-stack">
-            {Object.entries(atlasFiles)
-              .filter(([_key, b]) => b.atlas_category === selectedCategory)
-              .sort(([, a], [, b]) => (a.difficulty || 0) - (b.difficulty || 0))
-              .map(([key, atlas]) => (
-                <button
-                  key={key}
-                  className={`atlas-option-card ${selectedAtlas === key ? "selected" : ""}`}
-                  onClick={() => handleAtlasSelection(key)}
-                >
-                  <div className="atlas-text-group">
-                      <span
-                        className="atlas-text-container"
-                        dangerouslySetInnerHTML={{ __html: t(key.toLowerCase() + "_info") }}
-                      ></span>
-                  </div>
-                  {atlas.difficulty > 0 && (
-                    <div className="difficulty-wrapper">
-                      <span className="difficulty-label">{t("difficulty") || "Difficulté"}</span>
-                      <div className="difficulty-icons">
-                        {atlas.info && welcomeSubPage === "singleplayer" && (
-                          <span
-                            className="info-icon-wrapper"
-                            onMouseEnter={(e) => handleInfoHover(e, t("info_info") || "")}
-                            onMouseLeave={handleInfoLeave}
-                          >
-                            <span className="info-icon">ⓘ</span>
-                          </span>
-                        )}
-                        {[...Array(atlas.difficulty)].map((_, index) => (
-                          <img key={index} src="/interface/cerveau.png" alt="brain" className="brain-icon" />
-                        ))}
-                      </div>
+        {(!isMobileView || selectedAtlas === "") && (
+          <div className="column-atlas">
+            <div className="column-title">{t("select_atlas")}</div>
+            <div className="atlas-list-stack">
+              {Object.entries(atlasFiles)
+                .filter(([_key, b]) => b.atlas_category === selectedCategory)
+                .sort(([, a], [, b]) => (a.difficulty || 0) - (b.difficulty || 0))
+                .map(([key, atlas]) => (
+                  <button
+                    key={key}
+                    className={`atlas-option-card ${selectedAtlas === key ? "selected" : ""}`}
+                    onClick={() => handleAtlasSelection(key)}
+                  >
+                    <div className="atlas-text-group">
+                        <span
+                          className="atlas-text-container"
+                          dangerouslySetInnerHTML={{ __html: t(key.toLowerCase() + "_info") }}
+                        ></span>
                     </div>
-                  )}
-                </button>
-              ))}
+                    {atlas.difficulty > 0 && (
+                      <div className="difficulty-wrapper">
+                        <span className="difficulty-label">{t("difficulty") || "Difficulté"}</span>
+                        <div className="difficulty-icons">
+                          {atlas.info && welcomeSubPage === "singleplayer" && (
+                            <span
+                              className="info-icon-wrapper"
+                              onMouseEnter={(e) => handleInfoHover(e, t("info_info") || "")}
+                              onMouseLeave={handleInfoLeave}
+                            >
+                              <span className="info-icon">ⓘ</span>
+                            </span>
+                          )}
+                          {[...Array(atlas.difficulty)].map((_, index) => (
+                            <img key={index} src="/interface/cerveau.png" alt="brain" className="brain-icon" />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </button>
+                ))}
+            </div>
           </div>
-        </div>
+        )}
+        {(isMobileView && selectedAtlas !== "") && (
+          <div className="detail-header">
+            <button className="back-button" onClick={() => setSelectedAtlas("")}>
+              ← {t("back_to_atlases")}
+            </button>
+            <h2>{t(atlasFiles[selectedAtlas]?.name || "")}</h2>
+          </div>
+        )}
 
         {/* COLONNE DROITE : MODES */}
-        <div className={`column-modes ${!selectedAtlas ? "disabled-section" : ""}`}>
-            <div className="column-title">{t("select_game_mode")}</div>
+        {(!isMobileView || selectedAtlas !== "") && (
+          <div className={`column-modes ${!selectedAtlas ? "disabled-section" : ""}`}>
+              <div className="column-title">{t("select_game_mode")}</div>
 
-            <div className="mode-list-grid">
-               <button
-                  className={`mode-option-card ${selectedMode === 'navigation' ? 'selected' : ''}`}
-                  onClick={() => handleModeSelection('navigation')}
-               >
-                  <img src="/interface/boussole.png" alt="Nav" className="mode-icon" />
-                  <div className="mode-info"><h4>{t("navigation_mode")}</h4></div>
-               </button>
+              <div className="mode-list-grid">
+                <button
+                    className={`mode-option-card ${selectedMode === 'navigation' ? 'selected' : ''}`}
+                    onClick={() => handleModeSelection('navigation')}
+                >
+                    <img src="/interface/boussole.png" alt="Nav" className="mode-icon" />
+                    <div className="mode-info"><h4>{t("navigation_mode")}</h4></div>
+                </button>
 
-               <button
-                  className={`mode-option-card ${selectedMode === 'practice' ? 'selected' : ''}`}
-                  onClick={() => handleModeSelection('practice')}
-               >
-                  <img src="/interface/practice.png" alt="Prac" className="mode-icon" />
-                  <div className="mode-info"><h4>{t("practice_mode")}</h4></div>
-               </button>
+                <button
+                    className={`mode-option-card ${selectedMode === 'practice' ? 'selected' : ''}`}
+                    onClick={() => handleModeSelection('practice')}
+                >
+                    <img src="/interface/practice.png" alt="Prac" className="mode-icon" />
+                    <div className="mode-info"><h4>{t("practice_mode")}</h4></div>
+                </button>
 
-               <button
-                  className={`mode-option-card ${selectedMode === 'streak' ? 'selected' : ''}`}
-                  onClick={() => handleModeSelection('streak')}
-               >
-                  <img src="/interface/flame.png" alt="Strk" className="mode-icon" />
-                  <div className="mode-info"><h4>{t("streak_mode")}</h4></div>
-               </button>
+                <button
+                    className={`mode-option-card ${selectedMode === 'streak' ? 'selected' : ''}`}
+                    onClick={() => handleModeSelection('streak')}
+                >
+                    <img src="/interface/flame.png" alt="Strk" className="mode-icon" />
+                    <div className="mode-info"><h4>{t("streak_mode")}</h4></div>
+                </button>
 
-               <button
-                  className={`mode-option-card ${selectedMode === 'time-attack' ? 'selected' : ''}`}
-                  onClick={() => handleModeSelection('time-attack')}
-               >
-                  <img src="/interface/chronometer.png" alt="Time" className="mode-icon" />
-                  <div className="mode-info"><h4>{t("time_attack_mode")}</h4></div>
-               </button>
+                <button
+                    className={`mode-option-card ${selectedMode === 'time-attack' ? 'selected' : ''}`}
+                    onClick={() => handleModeSelection('time-attack')}
+                >
+                    <img src="/interface/chronometer.png" alt="Time" className="mode-icon" />
+                    <div className="mode-info"><h4>{t("time_attack_mode")}</h4></div>
+                </button>
+              </div>
+
+              <label className="blind-mode-row">
+                <input type="checkbox" checked={blindMode} onChange={() => setBlindMode(!blindMode)} />
+                <span className="blind-text">{t("blind_mode")}</span>
+              </label>
+
+              <button
+                className={`play-button ${selectedAtlas && selectedMode ? 'enabled' : ''}`}
+                disabled={!selectedAtlas || !selectedMode}
+                onClick={handlePlay}
+              >
+                {t("play_button")}
+              </button>
             </div>
-
-            <label className="blind-mode-row">
-               <input type="checkbox" checked={blindMode} onChange={() => setBlindMode(!blindMode)} />
-               <span className="blind-text">{t("blind_mode")}</span>
-            </label>
-
-            <button
-               className={`play-button ${selectedAtlas && selectedMode ? 'enabled' : ''}`}
-               disabled={!selectedAtlas || !selectedMode}
-               onClick={handlePlay}
-             >
-               {t("play_button")}
-             </button>
-          </div>
+        )}
 
       </div>
     </div>

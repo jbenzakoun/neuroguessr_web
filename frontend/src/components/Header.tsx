@@ -8,7 +8,8 @@ function Header() {
     const {currentLanguage, t, handleChangeLanguage,
     isLoggedIn,
     headerMessages, headerStreak, headerTime, headerErrors, headerScore,
-    pageContext, showTooltip, hideTooltip } = useApp();
+    pageContext, showTooltip, hideTooltip,
+    isMobileView } = useApp();
 
     // Use local state to track if we're hydrated to prevent hydration mismatch
     const [isHydrated, setIsHydrated] = useState(false);
@@ -77,7 +78,7 @@ function Header() {
                                         <span className="target-text">{headerMessages[0].text}</span>
                                     </p>
                                 )}
-                                <SearchBar inline />
+                                {!isMobileView && <SearchBar inline />}
                             </div>
                             {headerMessages[1]?.text && (
                                 <p className="nav-region-short">{headerMessages[1].text}</p>
