@@ -395,7 +395,7 @@ export function GameProvider({
             const isMobile = window.innerWidth <= 768;
 
             setIsLoading(true);
-
+            
             // 1. Wait for Niivue to be ready
             if (!niivue || !canvasRef.current) {
                 loadInProgressRef.current = false;

@@ -7,7 +7,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative;
     z-index: 1000;
     transition: background-color 0.4s ease, border-bottom-color 0.4s ease;
     min-height: 80px;
@@ -58,13 +57,12 @@
 
 /* --- MILIEU : GAME INFO PANEL (La "Boite Claire") --- */
 .navbar-middle {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    max-width: calc(100% - 500px);
+    min-width: 0;
     padding: 0 16px;
 }
 
@@ -323,11 +321,11 @@
 .navbar-right {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 30px;
     position: relative;
     z-index: 1000;
     margin-right: 16px;
-    margin-left: auto;
 }
 
 .guest-sign-in-button {
@@ -453,21 +451,26 @@
 }
 
 /* MOBILE */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
     .navbar-middle {
-        position: static; transform: none;
-        margin-top: 16px; order: 3; width: 100%;
+        position: inherit; 
+        margin-top: 8px; width: 100%;
         padding: 0 8px;
+        top: 0; left: 0; transform: none;
     }
     .navbar-container { flex-wrap: wrap; padding: 8px 8px 16px 8px; gap: 8px; }
     .game-info-panel { width: 100%; min-width: 0; }
     .nav-info-box {
+        position: inherit;
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
         padding: 12px;
         max-height: 200px;
         overflow-y: auto;
+    }
+    .score-error-container{
+        position: inherit;
     }
     .header-region-row {
         flex-wrap: wrap;
@@ -489,7 +492,6 @@
         line-height: 0.85;
     }
     .logo { height: 44px; }
-    .navbar-middle { margin-top: 12px; }
 }
 
 /* PHONE PORTRAIT - Tiny screens */
@@ -501,11 +503,13 @@
         line-height: 0.8;
     }
     .logo { height: 40px; }
-    .navbar-middle { margin-top: 8px; }
+    .navbar-middle { 
+        margin-top: 0px;
+        padding: 0;
+     }
 
     /* In navigation mode, move info box below header */
     .nav-info-box-header {
-        position: absolute !important;
         top: 100%;
         left: 0;
         right: 0;
@@ -555,11 +559,12 @@
 
     .navbar-right {
         gap: 12px;
+        margin: 0;
     }
 }
 
 /* TABLET & MOBILE - Hide lang switcher and reposition nav-info in navigation mode */
-@media (max-width: 900px) {
+@media (max-width: 768px) {
     .lang-switcher {
         display: none;
     }
@@ -567,11 +572,11 @@
     /* In navigation mode, move nav-info-box out of navbar and below header */
     .navbar-container {
         margin-bottom: 0;
+        min-height: auto;
+        padding: 4px;
     }
 
     .nav-info-box-header {
-        position: absolute !important;
-        top: 100%;
         left: 0;
         right: 0;
         width: 100vw;
@@ -588,7 +593,6 @@
 
     /* Game info box (for all modes except navigation) also positioned below header in mobile */
     .game-info-box-header {
-        position: absolute !important;
         top: 100%;
         left: 0;
         right: 0;
