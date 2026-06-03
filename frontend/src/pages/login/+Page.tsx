@@ -195,7 +195,7 @@ function LoginScreen() {
                     <h2>{t("login_mode")}</h2>
                     <div className="login-fields">
                         <div className="login-field">
-                            <label htmlFor="username">{t("login_username")}</label>
+                            <label htmlFor="username">{t("login_username_or_email")}</label>
                             <input type="text" id="username" name="username" ref={usernameInput} required />
                         </div>
                         <div className="login-field">
