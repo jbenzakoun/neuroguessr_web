@@ -45,6 +45,16 @@ export const BrainViewer = ({ alternateContent, sessionName, sessionDate }: { al
         };
     }, [canvasRef]);
 
+    // Non-passive touchmove on mobile scroll bar to allow preventDefault
+    useEffect(() => {
+        if (!isMobileView) return;
+        const scrollBar = scrollBarRef.current;
+        if (!scrollBar) return;
+        const prevent = (e: TouchEvent) => { if (e.cancelable) e.preventDefault(); };
+        scrollBar.addEventListener('touchmove', prevent, { passive: false });
+        return () => scrollBar.removeEventListener('touchmove', prevent);
+    }, [isMobileView, scrollBarRef]);
+
     // Ctrl/Cmd + scroll = zoom in navigation mode
     useEffect(() => {
         if (gameMode !== 'navigation' || !niivue) return;
@@ -93,7 +103,7 @@ export const BrainViewer = ({ alternateContent, sessionName, sessionDate }: { al
                         </div>
                     )}
                     {!isLoading && <div className="button-container">
-                        {(gameMode !== "multiplayer" || hasEnded) && <button
+                        {(gameMode !== "multiplayer" || hasEnded) && !isMobileView && <button
                             data-umami-event="go back button" data-umami-event-gobacksource={gameMode}
                             className="home-button" onClick={() => { navigate("/welcome") }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -101,7 +111,7 @@ export const BrainViewer = ({ alternateContent, sessionName, sessionDate }: { al
                         </button>}
                         {gameMode === 'navigation' && <button className="return-button" disabled={highlightedRegion === null}
                             data-umami-event="recolorize button"
-                            onClick={handleRecolorization}>{t("restore_color")}</button>}
+                            onClick={handleRecolorization}>{isMobileView?t("restore_color_no_esc"):t("restore_color")}</button>}
                         {gameMode === 'navigation' && highlightedRegion !== null && (
                             <button
                                 className={`lock-button${isRegionLocked ? ' locked' : ''}`}
@@ -719,8 +729,6 @@ export function GameProvider({
         if(clientY !== undefined){
             updateScrollThumb(clientY);
         }
-        // Prevent default to avoid page scrolling
-        e.preventDefault();
     };
 
     // Handle scroll end

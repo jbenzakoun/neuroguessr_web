@@ -99,22 +99,35 @@
     opacity: 1;
 }
 
-@media (max-width: 650px) {
-    .lower-bar {
-        display: none;
-    }
+.lower-logo-ghu-mobile,
+.lower-logo-ipnp-mobile,
+.lower-logo-upc-mobile {
+    display: none;
+}
 
+@media (max-width: 650px) {
     .footer-items {
-        gap: 12px;
+        gap: 2px;
+    }
+    .footer-link-label {
+        display: none;
     }
 
     .lower-legal-text {
         display: none;
     }
 
+        
+    .lower-logo-ghu-mobile,
+    .lower-logo-ipnp-mobile,
+    .lower-logo-upc-mobile {
+        display: block;
+        height: 28px;
+    }
+
     .lower-logo-ghu,
     .lower-logo-ipnp,
     .lower-logo-upc {
-        height: 28px !important;
+        display:none;
     }
 }

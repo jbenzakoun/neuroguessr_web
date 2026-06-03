@@ -14,6 +14,7 @@
   "atlas_opacity": "Opacité",
   "return_button": "Retour",
   "restore_color": "Recolorer (Échap)",
+  "restore_color_no_esc": "Recolorer",
   "confirm_guess": "Confirmer",
   "space_key": " (espace)",
   "select_atlas": "Sélectionner un atlas",

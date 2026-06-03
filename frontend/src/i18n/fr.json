@@ -25,6 +25,7 @@
   "clip_plane": "Plan de coupe",
   "return_button": "Retour",
   "restore_color": "Recolorer (Échap)",
+  "restore_color_no_esc": "Recolorer",
   "lock_region": "Verrouiller",
   "unlock_region": "Déverrouiller",
   "more_details": "En savoir plus",

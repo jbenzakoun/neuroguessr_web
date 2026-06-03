@@ -69,12 +69,12 @@ export function Help() {
                </div>
             </div>}
 
-            <div className="help-button-container" ref={helpButtonRef}>
+            {/*<div className="help-button-container" ref={helpButtonRef}>
                <button id="help-button" className="help-button"
                     data-umami-event="open help" data-umami-event-page={currentPage} onClick={() => setShowHelpOverlay(true)}>
                   <img src="/interface/question.png" alt="Help" style={{width: '20px', height: '20px'}} />
                </button>
-            </div>
+            </div>*/}
          </>}
 
          {showLegalOverlay && <div id="legal-overlay" className="help-overlay" onClick={() => setShowLegalOverlay(false)}>

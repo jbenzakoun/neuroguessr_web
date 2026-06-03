@@ -24,18 +24,21 @@ const Footer = () => {
                <a className='footer-item' href="https://www.ghu-paris.fr/" target="_blank" rel="noopener noreferrer"
                   data-umami-event="outbound link click" data-umami-event-target-website="GHU Paris">
                   <img src="/interface/logo-ghu-64.png" alt="GHU Paris" className='lower-logo-ghu'/>
+                  <img src="/interface/logo-ghu-64-mobile.png" alt="GHU Paris" className='lower-logo-ghu-mobile'/>
                </a>
 
                {/* IPNP */}
                <a className='footer-item' href="https://ipnp.paris5.inserm.fr/" target="_blank" rel="noopener noreferrer"
                   data-umami-event="outbound link click" data-umami-event-target-website="IPNP">
                   <img src="/interface/logo-ipnp-64.png" alt="IPNP" className='lower-logo-ipnp'/>
+                  <img src="/interface/logo-ipnp-64-mobile.png" alt="IPNP" className='lower-logo-ipnp-mobile'/>
                </a>
 
                {/* Université Paris Cité */}
                <a className='footer-item' href="https://u-paris.fr/" target="_blank" rel="noopener noreferrer"
                   data-umami-event="outbound link click" data-umami-event-target-website="Université Paris Cité">
                   <img src="/interface/UniversiteParisCite_logo_horizontal_blanc.png" alt="Université Paris Cité" className='lower-logo-upc'/>
+                  <img src="/interface/UniversiteParisCite_logo_horizontal_blanc_mobile.png" alt="Université Paris Cité" className='lower-logo-upc-mobile'/>
                </a>
 
                {/* Contributors */}
