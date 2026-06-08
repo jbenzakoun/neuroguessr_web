@@ -262,6 +262,7 @@ function SinglePlayer({
                     atlas: atlasRef.current!.atlas,
                     isCorrect: false,
                     clickedPosition: undefined,
+                    clickedRegionName: undefined,
                     score: 0,
                     distance: -1,
                 }]);
@@ -307,6 +308,13 @@ function SinglePlayer({
         if (!replaySessionId && lastGuessResult && gameMode !== "navigation") {
             // Update pastRegions if pastRegionId is provided
             if (lastGuessResult.pastRegionId !== undefined) {
+                const clickedVox = lastGuessResult.clickedPosition?.vox;
+                const clickedIdx = (clickedVox && atlasRef.current)
+                    ? atlasRef.current.getValue(clickedVox[0]!, clickedVox[1]!, clickedVox[2]!)
+                    : undefined;
+                const clickedRegionName = clickedIdx !== undefined && atlasRef.current
+                    ? atlasRef.current.labels?.[clickedIdx] ?? undefined
+                    : undefined;
                 setPastRegions(prev => prev.map(region =>
                     region.id === lastGuessResult.pastRegionId
                         ? {
@@ -316,7 +324,8 @@ function SinglePlayer({
                             distance: lastGuessResult.distance,
                             regionCenter: lastGuessResult.regionCenter,
                             regionBoundary: lastGuessResult.regionBoundary,
-                            clickedPosition: lastGuessResult.clickedPosition
+                            clickedPosition: lastGuessResult.clickedPosition,
+                            clickedRegionName
                         }
                         : region
                 ));
@@ -608,6 +617,7 @@ function SinglePlayer({
                     atlas: atlasRef.current!.atlas,
                     isCorrect: false,
                     clickedPosition: selectedVoxelProp.current || undefined,
+                    clickedRegionName: undefined,
                     score: 0,
                     distance: -1, // Special value to indicate no guess was made
                 }]);

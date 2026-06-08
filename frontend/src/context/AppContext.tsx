@@ -16,7 +16,7 @@ type NVImageConstructor = {
   loadFromUrl(options: { url: string }): Promise<NVImage>;
 }
 
-type SourceElement = {
+export type SourceElement = {
   auteur: string;
   journal: string;
   year: string;

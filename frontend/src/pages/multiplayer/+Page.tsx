@@ -4,14 +4,14 @@ import "../../components/BrainViewer.css"
 import { useApp } from '../../context/AppContext';
 import ChallengeEmailOptIn from '../../components/ChallengeEmailOptIn';
 import { useSocket } from '../../context/SocketContext';
-import {  MultiplayerParametersType } from '../../types/types';
+import {  MultiplayerParametersType, PastRegion } from '../../types/types';
 import config from "../../../config.json"
 import { Socket } from 'socket.io-client';
 import { PublishToLeaderboardBox } from '../../components/PublishToLeaderboardBox';
 import { BrainViewer, GameProvider, useGame } from '../../components/BrainViewer';
 import { consoleLog } from '../../utils/logging';
 import { prefetchAtlasJSON, preloadAtlas } from '../../utils/nifti_cache';
-import { formatTime } from '../../utils/formatters';
+import { GuessResult } from '../../hooks/useSinglePlayerSocket';
 
 export function Page() {
     const cleanGameCallbackRef = useRef<(() => void)>(() => { consoleLog("verbose", "Clean game callback not initialized") });
@@ -411,9 +411,16 @@ const MultiPlayer = ({
       
       setShowMultiplayerOverlay(true)
     });
-    socket.on('guess-result', (data: any) => {
+    socket.on('guess-result', (data: GuessResult) => {
         // Update existing pastRegion if pastRegionId is provided
         if (data.pastRegionId !== undefined) {
+          const clickedVox = data.clickedPosition?.vox;
+          const clickedIdx = (clickedVox && atlasRef.current)
+              ? atlasRef.current.getValue(clickedVox[0]!, clickedVox[1]!, clickedVox[2]!)
+              : undefined;
+          const clickedRegionName = clickedIdx !== undefined && atlasRef.current
+              ? atlasRef.current.labels?.[clickedIdx] ?? undefined
+              : undefined;
           setPastRegions(prev => prev.map(region =>
             region.id === data.pastRegionId
               ? {
@@ -421,13 +428,11 @@ const MultiPlayer = ({
                   isCorrect: data.isCorrect,
                   score: data.scoreIncrement,
                   distance: data.isCorrect ? 0 : data.distance,
-                  clickedPosition: data.clickedVoxelProp ? {
-                    mm: [...data.clickedVoxelProp.mm],
-                    vox: [...data.clickedVoxelProp.vox]
-                  } : undefined,
-                  regionCenter: data.nearestCenter,
-                  regionBoundary: data.nearestBoundary
-                }
+                  clickedPosition: data.clickedPosition,
+                  regionCenter: data.regionCenter,
+                  regionBoundary: data.regionBoundary,
+                  clickedRegionName: clickedRegionName
+                } as PastRegion
               : region
           ));
         }
