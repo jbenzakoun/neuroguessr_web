@@ -12,6 +12,10 @@
   background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   pointer-events: auto;
+
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content min-content auto min-content;
 }
 
 @media (max-width: 700px) {
@@ -25,6 +29,8 @@
 }
 
 .region-summary-header {
+  grid-column: 1;
+  grid-row: 1;
   text-align: center;
   padding-bottom: 12px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.15);
@@ -72,12 +78,13 @@
 }
 
 .region-list {
+  grid-column: 1;
+  grid-row: 3;
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-height: 150px;
-  max-height: 400px;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .region-item {
@@ -187,6 +194,8 @@
 }
 
 .region-detail-panel {
+  grid-column: 1;
+  grid-row: 2;
   background: rgba(100, 200, 255, 0.1);
   border: 1px solid rgba(100, 200, 255, 0.3);
   border-radius: 8px;
@@ -229,6 +238,8 @@
 }
 
 .region-navigation {
+  grid-column: 1;
+  grid-row: 4;
   display: flex;
   justify-content: center;
   align-items: center;

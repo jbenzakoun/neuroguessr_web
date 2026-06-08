@@ -183,11 +183,6 @@
     }
 }
 
-/* When RegionHistory is visible (review mode), buttons resize with canvas */
-.canvas-and-scroll-container.review-mode .button-container {
-    grid-column: 1 / span 2;
-}
-
 @media (max-width: 768px) {
     .canvas-and-scroll-container {
         display: grid; /* Changed grid to flex for mobile stack */
