@@ -57,7 +57,7 @@
 }
 
 .help-button {
-    background-color: var(--bg-surface);
+    background-color: var(--bg-page);
     border: 1px solid rgba(255,255,255,0.1);
     color: var(--text-secondary);
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
