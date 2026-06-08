@@ -240,7 +240,7 @@ const RegionHistory = ({pastRegions, niivue, highlightPastRegion, sessionName, s
                     </svg>
                   </span>
             }
-            <button
+            {/*<button
               className="highlight-region-button"
               onClick={(e) => { e.stopPropagation(); handleHighlightRegion(region); }}
               title={t("highlight_region")}
@@ -252,7 +252,7 @@ const RegionHistory = ({pastRegions, niivue, highlightPastRegion, sessionName, s
                 <line x1="12" y1="6" x2="12" y2="2"/>
                 <line x1="12" y1="22" x2="12" y2="18"/>
               </svg>
-            </button>
+            </button>*/}
           </div>
         ))}
       </div>

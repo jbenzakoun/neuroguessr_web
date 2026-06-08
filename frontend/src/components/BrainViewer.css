@@ -41,6 +41,20 @@
     grid-column: 2 / span 2;
 }
 
+@media (max-width: 768px) {
+    .canvas-and-scroll-container.review-mode .canvas-container {
+        grid-column: 1 / span 2;
+        grid-row: 2;
+        width: 100%;
+        height: auto;
+        min-height: 300px;
+    }
+        
+    .canvas-and-scroll-container.review-mode .mobile-controls {
+        grid-row: 2;
+    }
+}
+
 /* On mobile, add margin-top for game info box space (navigation, practice, etc.) */
 .canvas-and-scroll-container.game-info-mobile {
     margin-top: 100px;
@@ -73,15 +87,15 @@
 }
 
 .canvas-and-scroll-container.review-mode {
-    grid-template-columns: 280px 1fr 1fr;
+    grid-template-columns: 280px 1fr auto;
 }
 
 .canvas-and-scroll-container.review-mode.sidebar-expanded {
-    grid-template-columns: 420px 1fr 1fr;
+    grid-template-columns: 420px 1fr auto;
 }
 
 .canvas-and-scroll-container.review-mode.sidebar-normal {
-    grid-template-columns: 280px 1fr 1fr;
+    grid-template-columns: 280px 1fr auto;
 }
 
 .region-info-overlay {
@@ -171,7 +185,7 @@
 
 /* When RegionHistory is visible (review mode), buttons resize with canvas */
 .canvas-and-scroll-container.review-mode .button-container {
-    grid-column: 2 / span 2;
+    grid-column: 1 / span 2;
 }
 
 @media (max-width: 768px) {
@@ -207,6 +221,10 @@
     .button-container{
         padding: 4px;
 
+    }
+
+    .canvas-and-scroll-container.review-mode .button-container {
+        grid-row: 3;
     }
 }
 
