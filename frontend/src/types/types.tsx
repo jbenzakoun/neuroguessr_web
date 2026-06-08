@@ -1,3 +1,5 @@
+import { SourceElement } from "../context/AppContext";
+
 export type AtlasRegion = {
   id: number;
   name: string;
@@ -45,7 +47,7 @@ export type ColorMap = {
   labels: string[];
   info?: string[];
   info_detail?: string[];
-  info_source?: string[];
+  info_source?: SourceElement[][];
   centers?: number[][][];
   autocenter?: {
     center?: number[],
@@ -76,7 +78,7 @@ export type PastRegion = {
   regionCenter?: number[] | undefined;
   regionBoundary?: number[] | undefined;
   atlas: string;
-  clickedRegionName?: string;
+  clickedRegionName?: string | undefined;
 }
 
 export type ImageMetadata = {
