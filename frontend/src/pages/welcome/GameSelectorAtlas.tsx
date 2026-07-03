@@ -53,7 +53,6 @@ export const GameSelectorAtlas = () => {
       // In multiplayer-create mode, pre-select the first category so all atlases are visible immediately
       const autoCategory = atlasCategories[0] || ""
       setSelectedCategory(autoCategory);
-      window.history.pushState(null, '', `/welcome/multiplayer-create/${autoCategory}`);
     } else {
       setSelectedCategory(defaultCategory);
     }
@@ -65,12 +64,16 @@ export const GameSelectorAtlas = () => {
     setSelectedCategory(category);
     setSelectedAtlas("");
     setSelectedMode("");
-    window.history.pushState(null, '', `/welcome/${isMultiCreate ? 'multiplayer-create' : 'singleplayer'}/${category}`);
+    if (!isMultiCreate) {
+      window.history.pushState(null, '', `/welcome/singleplayer/${category}`);
+    }
   }
 
   const handleAtlasSelection = (atlasKey: string) => {
     setSelectedAtlas(atlasKey);
-    window.history.pushState(null, '', `/welcome/${isMultiCreate ? 'multiplayer-create' : 'singleplayer'}/${selectedCategory}/${atlasKey}`);
+    if (!isMultiCreate) {
+      window.history.pushState(null, '', `/welcome/singleplayer/${selectedCategory}/${atlasKey}`);
+    }
     try {
       preloadAtlas(atlasKey);
       prefetchAtlasJSON(atlasKey);
