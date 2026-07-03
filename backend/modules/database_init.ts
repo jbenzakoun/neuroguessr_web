@@ -386,12 +386,18 @@ export const database_init = async () => {
             await sql`
                 INSERT INTO users (username, firstname, lastname, email, password, verified, admin)
                 VALUES ('test', 'Test', 'User', '', ${hashedPassword}, ${true}, ${false})
-                ON CONFLICT (username) DO UPDATE SET admin = false
+                ON CONFLICT (username) DO UPDATE SET password = EXCLUDED.password, admin = EXCLUDED.admin
             `;
-            logger.info("Test user added successfully.");
+            const hashedPasswordAdmin = await bcrypt.hash("admin", salt);
+            await sql`
+                INSERT INTO users (username, firstname, lastname, email, password, verified, admin)
+                VALUES ('admin', 'Admin', 'User', 'admin', ${hashedPasswordAdmin}, ${true}, ${true})
+                ON CONFLICT (username) DO UPDATE SET password = EXCLUDED.password, admin = EXCLUDED.admin
+            `;
+            logger.info("Test users added successfully.");
         }
     } catch (err) {
-        logger.error("Error initializing database schema:", (err instanceof Error ? err.message : err));
+        logger.error("Error initializing database schema:", err);
     }
 }
 
