@@ -1520,10 +1520,12 @@ export async function handleValidateGuess(data: {
       scoreIncrement,
       totalScore: finalScore,
       distance: minDistance,
-      nearestCenter,
-      nearestBoundary,
+      attempts: gameRef.individualAttempts[userName] || 0,
+      regionCompleted: isCorrect,
       pastRegionId,
-      clickedVoxelProp: voxelProp
+      regionCenter: nearestCenter,
+      regionBoundary: nearestBoundary,
+      clickedPosition: voxelProp
     })
     
     // For classic challenges, automatically advance to the next region
