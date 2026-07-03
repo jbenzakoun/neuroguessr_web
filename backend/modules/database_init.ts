@@ -153,7 +153,8 @@ export const database_init = async () => {
                     classic_challenge_end_date TIMESTAMP WITH TIME ZONE,
                     theoretical_maximum_score DECIMAL(8,2),
                     score_percentage DECIMAL(5,2),
-                    send_classic_challenge_email BOOLEAN NOT NULL DEFAULT FALSE
+                    send_classic_challenge_email BOOLEAN NOT NULL DEFAULT FALSE,
+                    chat JSONB DEFAULT NULL
                 );
             `;
             await sql`CREATE INDEX IF NOT EXISTS idx_finished_sessions_user_id ON finished_sessions(user_id);`;
@@ -344,6 +345,11 @@ export const database_init = async () => {
             await sql`
                 ALTER TABLE finished_sessions 
                 ADD COLUMN IF NOT EXISTS score_percentage DECIMAL(5,2);
+            `;
+
+            await sql`
+                ALTER TABLE finished_sessions 
+                ADD COLUMN IF NOT EXISTS chat JSONB DEFAULT NULL;
             `;
         });
 

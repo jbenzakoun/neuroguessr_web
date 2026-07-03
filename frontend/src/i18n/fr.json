@@ -335,6 +335,7 @@
   "neuroguessr_singleplayer_title": "NeuroGuessr - Jeu",
   "neuroguessr_stats_title": "NeuroGuessr - Statistiques",
   "neuroguessr_login_title": "NeuroGuessr - Connexion",
+  "chat_placeholder": "Discutez...",
 
   "construction_in_progress": "Construction en cours ! Merci de votre patience.",
   "classic_challenge_requires_login": "Connexion nécessaire",

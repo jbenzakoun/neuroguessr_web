@@ -564,6 +564,8 @@ export function GameProvider({
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            const tag = (e.target as HTMLElement)?.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return;
             if (e.code === 'Space' && gameMode !== "navigation") {
                 e.preventDefault();
                 handleSpaceBar();

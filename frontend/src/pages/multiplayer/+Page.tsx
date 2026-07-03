@@ -97,6 +97,12 @@ const MultiPlayer = ({
   const currentPastRegionId = useRef<number | null>(null);
   const isReplayMode = !askedSessionCode && (!!pageContext?.urlParsed.search["replay_multi"] || !!pageContext?.urlParsed.search["replay_session"]);
 
+  // Chat state
+  type ChatMsg = { userName: string; message: string; timestamp: number; visibleUntil: number };
+  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
+  const [chatInput, setChatInput] = useState<string>("");
+  const chatMessagesEndRef = useRef<HTMLDivElement>(null);
+
   const handleConnect = () => {
     setError(null);
     if (!inputCode.match(/^\d{8}$/)) {
@@ -443,6 +449,11 @@ const MultiPlayer = ({
         }
     });
     
+    socket.on('chat-message', (data: any) => {
+      const visibleUntil = Date.now() + 10_000;
+      setChatMessages(prev => [...prev, { ...data, visibleUntil }]);
+    });
+
     socket.on('session-code-changed', (data: any) => {
       consoleLog("verbose", `Session code changed from ${data.oldCode} to ${data.newCode}`);
       setInputCode(data.newCode);
@@ -517,6 +528,7 @@ const MultiPlayer = ({
           socket.off('all-scores-update');
           socket.off('game-end');
           socket.off('guess-result');
+          socket.off('chat-message');
           socket.off('session-code-changed');
           socket.off('session-destroyed');
           socket.off('game-launched');
@@ -697,6 +709,32 @@ const MultiPlayer = ({
     };
   }, [])
 
+  // Prune chat messages that have expired (auto-hide after 10s, only during game)
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!isGameRunning) return;
+      const now = Date.now();
+      setChatMessages(prev => prev.filter(m => m.visibleUntil > now));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isGameRunning]);
+
+  // Auto-scroll chat to bottom on new message
+  useEffect(() => {
+    chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  const sendChat = () => {
+    const msg = chatInput.trim();
+    if (!msg || msg.length > 500) return;
+    const socket = getSocket();
+    if (!socket || !socket.connected || !isLoggedIn || !authToken) return;
+    const sessionCode = isClassicChallenge ? implicitCodeRef.current : inputCodeRef.current;
+    if (!sessionCode) return;
+    socket.emit('send-chat-message', { sessionCode, userToken: authToken, message: msg });
+    setChatInput("");
+  };
+
   // Frontend - queue guess submissions
   const guessQueue = useRef<boolean>(false);
 
@@ -732,6 +770,36 @@ const MultiPlayer = ({
       }
   }, [validateGuessCallbackRef, isGameRunning, isAnonymous, userUsername, isLoggedIn, authToken, getSocket]);
 
+
+  const renderChat = () => (
+    <div
+      className="multiplayer-chat"
+    >
+      <div className="chat-messages">
+        {chatMessages.map((m, i) => (
+          <div key={i} className="chat-bubble">
+            <span className="chat-username">{m.userName}</span>
+            <span className="chat-text">{m.message}</span>
+          </div>
+        ))}
+        <div ref={chatMessagesEndRef} />
+      </div>
+      {isLoggedIn && (
+        <div className="chat-input-row">
+          <input
+            className="chat-input"
+            type="text"
+            value={chatInput}
+            maxLength={500}
+            placeholder={t("chat_placeholder") || "Say something..."}
+            onChange={e => setChatInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); sendChat(); } }}
+          />
+          <button className="chat-send-btn" onClick={sendChat}>&#9654;</button>
+        </div>
+      )}
+    </div>
+  );
 
   const renderWaitingContent = ({error}: {error: string|null}) => {
     // Show auth required screen for classic challenges when not logged in
@@ -802,6 +870,7 @@ const MultiPlayer = ({
           {challengeTitle && <h2>{challengeTitle}</h2>}
           <button className="start-classic-challenge-button"  data-umami-event="multiplayer start-classic button" onClick={handleClassicChallengeStart}>{t("start_classic_button")}</button>
           <div className='start-classic-challenge-warning'>{t("classic_challenge_start_warning")}</div>
+          {renderChat()}
         </div>
       );
     }
@@ -838,6 +907,7 @@ const MultiPlayer = ({
                 )}
               </div>
             {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
+            {renderChat()}
           </div>
         );
       } else if (!isClassicChallenge) {
@@ -867,6 +937,7 @@ const MultiPlayer = ({
               </div>}
             </div>
             {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
+            {renderChat()}
           </div>
         );
       }
@@ -883,6 +954,9 @@ const MultiPlayer = ({
       <BrainViewer alternateContent={renderWaitingContent({error})} sessionName={sessionNameRef.current} sessionDate={sessionDateRef.current} />
       
       {isGameRunning && (
+        <div className="multiplayer-side-panel">
+        {renderChat()}
+
         <div className="multiplayer-score-display">
           <div className="current-user-score">
             <div>
@@ -933,6 +1007,7 @@ const MultiPlayer = ({
               })()}
             </div>
           </div>
+        </div>
         </div>
       )}
       

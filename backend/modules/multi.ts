@@ -8,7 +8,7 @@ export const config: Config = configJson;
 import { imageMetadata, imageRef, regionCenters, validRegions } from "./game.ts";
 import { NVImage } from "@niivue/niivue";
 import { MultiSession } from "interfaces/database.interfaces.ts";
-import { GameCommands, MultiplayerGame, MultiplayerParametersType, PlayerInfo, PersistentGameState, ColorMap, JoinLobbyData } from "interfaces/multi.interfaces.ts";
+import { GameCommands, MultiplayerGame, MultiplayerParametersType, PlayerInfo, PersistentGameState, ColorMap, JoinLobbyData, ChatMessage } from "interfaces/multi.interfaces.ts";
 import crypto from "crypto";
 import { getIO } from "./socket.io.ts";
 import { Socket } from "socket.io";
@@ -486,7 +486,8 @@ async function createEmptySession(sessionCode: string, creatorId?: number) {
         individualCorrectDurations: {},
         anonymousUsernames: [],
         isCurrentlyBlind: false,
-        lastActivity: Date.now() // Update activity time
+        lastActivity: Date.now(), // Update activity time
+        chatMessages: []
       };
       
       games[sessionCode] = baseGameState;
@@ -536,6 +537,7 @@ async function createEmptySession(sessionCode: string, creatorId?: number) {
     startDate: startDate || undefined,
     endDate: endDate || undefined,
     name: name || undefined,
+    chatMessages: [],
     ...(creatorId !== undefined ? { creatorId } : {}),
   }
 }
@@ -554,8 +556,6 @@ function initUserInLobby(socket: Socket, userName: string, gameRef: MultiplayerG
     .filter(info => info.sessionCode === sessionCode)
     .map(info => info.userName)
     .filter(Boolean);
-
-  // Send data to the new user
   if(!gameRef.isClassicChallenge) socket.emit('lobby-users', { users: userList });
   socket.emit('parameters-updated', { parameters: gameRef.parameters });
 
@@ -1849,4 +1849,56 @@ export async function replaySingleSessionById(req: Request, res: Response) {
 }
 
 setupInactiveGameCheck();
+
+export async function handleChatMessage(data: {
+  sessionCode: string;
+  userToken: string;
+  message: string;
+}): Promise<void> {
+  try {
+    const { sessionCode, userToken, message } = data;
+
+    // Only authenticated (non-anonymous) users may send chat messages
+    let userName: string;
+    let userId: number;
+    try {
+      const jwtPayload: any = jwt.verify(userToken, config.jwt_secret);
+      if (!jwtPayload?.username || !jwtPayload?.id) {
+        return;
+      }
+      userName = String(jwtPayload.username);
+      userId = Number(jwtPayload.id);
+    } catch {
+      return;
+    }
+
+    // Sender must be in the session
+    const playerKey = `${sessionCode}:${userName}`;
+    if (!playerInfo[playerKey]) return;
+
+    const gameRef = games[sessionCode];
+    if (!gameRef || gameRef.hasEnded) return;
+
+    // Sanitise: trim and limit length
+    const trimmed = message?.trim?.();
+    if (!trimmed || trimmed.length === 0 || trimmed.length > 500) return;
+
+    const chatMsg: ChatMessage = {
+      userName,
+      userId,
+      message: trimmed,
+      timestamp: Date.now()
+    };
+
+    gameRef.chatMessages.push(chatMsg);
+    updateGameActivity(sessionCode);
+
+    // Broadcast to all players in the session
+    broadcastToSession(sessionCode, 'chat-message', chatMsg);
+
+    logger.info(`Chat in game ${sessionCode} from ${userName}: ${trimmed.substring(0, 80)}`);
+  } catch (error) {
+    logger.error('handleChatMessage error:', error);
+  }
+}
 

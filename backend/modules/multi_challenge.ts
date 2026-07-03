@@ -406,7 +406,8 @@ export async function restorePersistentRealTimeChallengeSessions() {
           individualCorrectDurations: {},
           anonymousUsernames: [],
           isCurrentlyBlind: false,
-          lastActivity: Date.now()
+          lastActivity: Date.now(),
+          chatMessages: []
         };
 
         // If the start time has passed

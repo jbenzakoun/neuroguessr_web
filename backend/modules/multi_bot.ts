@@ -1,11 +1,25 @@
 import crypto from "crypto";
-import { MultiplayerGame } from "interfaces/multi.interfaces.ts";
+import { ChatMessage, MultiplayerGame } from "interfaces/multi.interfaces.ts";
 import { imageRef, regionCenters } from "./game.ts";
 import { logger } from "./logging.ts";
 import { broadcastToSession, config, games, handleValidateGuess, playerInfo, socketClients } from "./multi.ts";
 import { emitPublicLobbiesUpdate } from "./multi_public.ts";
 
 export const BOT_USERNAME = "Bot";
+const BOT_USER_ID = -1; // sentinel id for the bot
+
+const BOT_CHAT_PHRASES = [
+  "Good luck everyone!",
+  "This one's tricky...",
+  "Nice click!",
+  "I almost had it!",
+  "Let's go!",
+  "Hmm, where could that be?",
+  "Great game so far!",
+  "I'm warming up!",
+  "Stay focused!",
+  "So close!",
+];
 
 // Schedule bot join for a standard multiplayer game (5 seconds after session creation)
 export function scheduleBotJoinStandard(sessionCode: string): void {
@@ -84,6 +98,8 @@ async function botJoinGame(sessionCode: string): Promise<void> {
   broadcastToSession(sessionCode, 'player-joined', { userName: BOT_USERNAME });
   emitPublicLobbiesUpdate();
 
+  scheduleBotChat(sessionCode);
+
   logger.info(`Bot joined game ${sessionCode}`);
 }
 
@@ -154,5 +170,46 @@ async function executeBotGuess(sessionCode: string, commandIndex: number, region
     logger.info(`Bot guessed region ${regionId} in game ${sessionCode}`);
   } catch (error) {
     logger.error(`Bot: Error executing guess in game ${sessionCode}:`, error);
+  }
+}
+
+// Schedule recurring random chat messages for the bot throughout the game
+function scheduleBotChat(sessionCode: string): void {
+  const sendNext = () => {
+    const gameRef = games[sessionCode];
+    if (!gameRef || gameRef.hasEnded) return;
+    if (!playerInfo[`${sessionCode}:${BOT_USERNAME}`]) return;
+
+    botSendChat(sessionCode);
+
+    // Schedule the next message: between 5 and 30 seconds
+    const delay = Math.floor(Math.random() * 25_000) + 5_000;
+    setTimeout(sendNext, delay);
+  };
+
+  // First message: between 5 and 20 seconds after joining
+  const initialDelay = Math.floor(Math.random() * 15_000) + 5_000;
+  setTimeout(sendNext, initialDelay);
+}
+
+// Push a random chat message on behalf of the bot directly (no JWT needed)
+function botSendChat(sessionCode: string): void {
+  try {
+    const gameRef = games[sessionCode];
+    if (!gameRef || gameRef.hasEnded) return;
+
+    const phrase = BOT_CHAT_PHRASES[Math.floor(Math.random() * BOT_CHAT_PHRASES.length)];
+    const chatMsg: ChatMessage = {
+      userName: BOT_USERNAME,
+      userId: BOT_USER_ID,
+      message: phrase,
+      timestamp: Date.now(),
+    };
+
+    gameRef.chatMessages.push(chatMsg);
+    broadcastToSession(sessionCode, 'chat-message', chatMsg);
+    logger.info(`Bot sent chat in game ${sessionCode}: ${phrase}`);
+  } catch (error) {
+    logger.error(`Bot: Error sending chat in game ${sessionCode}:`, error);
   }
 }

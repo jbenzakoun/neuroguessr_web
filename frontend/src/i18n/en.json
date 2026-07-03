@@ -334,6 +334,7 @@
   "neuroguessr_stats_title": "NeuroGuessr - Statistics",
   "neuroguessr_login_title": "NeuroGuessr - Login",
   "construction_in_progress": "This page is under construction",
+  "chat_placeholder": "Say something...",
 
   "classic_challenge_requires_login": "Please connect",
   "please_login_or_signup": "Please connect or subscribe before playing challenge.",
