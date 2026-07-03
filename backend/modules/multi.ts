@@ -23,6 +23,7 @@ import { logoString } from "./email.ts";
 import { atomicGameUpdate, generateCode, isReservedSessionCode } from "./socket.ts";
 import { handleClassicChallengeEnd, joinClassicChallenge } from "./multi_classic_challenge.ts";
 import type { PastRegion } from "../../frontend/src/types/types.tsx";
+import { scheduleBotJoinStandard, scheduleBotGuess } from "./multi_bot.ts";
 
 const DEFAULT_REGION_NUMBER = 15;
 const DEFAULT_DURATION_PER_REGION = 15;
@@ -408,6 +409,7 @@ export const createMultiplayerSession = async (req: Request, res: Response) => {
         sessionId: result[0].id,
         sessionToken
     });
+    scheduleBotJoinStandard(sessionCode);
   } catch (error) {
         logger.error("Error creating multiplayer session:", error);
         res.status(500).send({ message: "Internal Server Error" });
@@ -1148,7 +1150,10 @@ export async function sendNextCommand(gameRef: MultiplayerGame) {
       gameRef.isCurrentlyBlind = command.blindMode || false;
       gameRef.hasFinishedCountdown = true;
     }
-    if(command.action == "guess") gameRef.currentRegionId = command.regionId || -1;
+    if(command.action == "guess") {
+      gameRef.currentRegionId = command.regionId || -1;
+      scheduleBotGuess(gameRef, gameRef.currentCommandIndex);
+    }
     
     // Broadcast scores to all users
     broadcastToSession(gameRef.sessionCode, 'all-scores-update', { scores: gameRef.individualScores, maximumScore: gameRef.theoreticalMaximumScore });

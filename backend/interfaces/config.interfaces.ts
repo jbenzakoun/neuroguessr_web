@@ -42,6 +42,7 @@ export interface Config {
     addTestUser: boolean;
     captcha: CaptchaConfig;
     allowAnonymousInMultiplayer: boolean;
+    activateMultiplayerBot?: boolean;
     salt: string;
     jwt_secret: string;
     pgConnectionString: string;
