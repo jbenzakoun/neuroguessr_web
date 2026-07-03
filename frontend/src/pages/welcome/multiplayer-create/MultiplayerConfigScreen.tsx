@@ -85,17 +85,6 @@ const validateCountdownStartTime = (advancedSettingsJSON: string): { isValid: bo
     }
 };
 
-const hasCountdownWithStartTime = (advancedSettingsJSON: string): boolean => {
-    try {
-        const parsedJSON = JSON.parse(advancedSettingsJSON);
-        return parsedJSON.length > 0 && 
-               parsedJSON[0].action === "countdown" && 
-               parsedJSON[0].startTime;
-    } catch (err) {
-        return false;
-    }
-};
-
 const MultiplayerConfigScreen = () => {
     const { t, authToken, userUsername, userIsAdmin, currentLanguage, copyToClipboard, refreshNextChallenge } = useApp();
     const { selectedAtlas } = useGameSelector();
@@ -1621,34 +1610,9 @@ const MultiplayerConfigScreen = () => {
                                 </div>
                                 <div className="atlas-block">
                                     <div className='atlas-picker-ui' key="countdown-config">
-                                    <div style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'center'}}>
                                         <label style={{ marginRight: '0px' }}>
-                                            {t("countdown_mode") || "Countdown Mode"}:
+                                            {t("countdown_duration") || "Countdown Duration (seconds)"}:
                                         </label>
-                                        <div className="custom-select-wrapper">
-                                            <select
-                                                className="custom-select"
-                                                value={countdownMode}
-                                                onChange={(e) => {
-                                                    const newMode = e.target.value as "duration" | "startTime";
-                                                    setCountdownMode(newMode);
-                                                    if (newMode === "duration") {
-                                                        updateCountdownDuration(getCountdownDuration() || DEFAULT_COUNTDOWN_TIME);
-                                                    } else {
-                                                        const defaultTime = new Date();
-                                                        defaultTime.setMinutes(defaultTime.getMinutes() + 5);
-                                                        const localString = convertToLocale(defaultTime);
-                                                        setCountdownStartTime(localString);
-                                                        updateCountdownStartTime(new Date(localString).toISOString());
-                                                    }
-                                                }}
-                                            >
-                                                <option value="duration">{t("countdown_duration") || "Duration (seconds)"}</option>
-                                                <option value="startTime">{t("countdown_start_time") || "Specific Start Time"}</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    {countdownMode === "duration" ? (
                                         <input
                                             className="adv-number-input"
                                             type="number"
@@ -1659,23 +1623,7 @@ const MultiplayerConfigScreen = () => {
                                             onClick={(e) => { e.stopPropagation(); }}
                                             placeholder={t("seconds") || "seconds"}
                                         />
-                                    ) : (
-                                        <input
-                                            className="adv-datetime-input"
-                                            type="datetime-local"
-                                            value={countdownStartTime}
-                                            onChange={(e) => {
-                                                const localValue = e.target.value;
-                                                const isoString = new Date(localValue).toISOString();
-                                                console.log("upd", localValue)
-                                                setCountdownStartTime(localValue);
-                                                updateCountdownStartTime(isoString);
-                                            }}
-                                            onClick={(e) => { e.stopPropagation(); }}
-                                            min={new Date().toISOString().slice(0, 19)}
-                                        />
-                                    )}
-                                </div>
+                                    </div>
                                     {renderAtlasBlocks()}
                                     <div className='atlas-picker-ui' key="atlas-picker">
                                         {renderAtlasPicker()}
@@ -1867,52 +1815,6 @@ const MultiplayerConfigScreen = () => {
                                     >
                                         {t("create_challenge") || "Create Challenge"}
                                     </button>
-                                )}
-
-                                {userIsAdmin && showAdvancedSettings && hasCountdownWithStartTime(advancedSettingsJSON) && (
-                                    <div className="recurrence-settings">
-                                        <div className="recurrence-title">{t("recurrence_settings") || "Recurrence Settings"}</div>
-                                        <div className="recurrence-checkbox-container">
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={enableRecurrence}
-                                                    onChange={(e) => setEnableRecurrence(e.target.checked)}
-                                                    style={{ marginRight: 8 }}
-                                                />
-                                                {t("enable_recurrence") || "Enable automatic recurrence"}
-                                            </label>
-                                        </div>
-                                        {enableRecurrence && (
-                                            <div className="recurrence-options">
-                                                <div className="recurrence-row">
-                                                    <span className="recurrence-label">{t("repeat_every") || "Repeat every"}:</span>
-                                                    <input
-                                                        type="number"
-                                                        className="recurrence-input"
-                                                        min={1}
-                                                        max={10}
-                                                        value={recurrenceInterval}
-                                                        onChange={(e) => setRecurrenceInterval(Number(e.target.value))}
-                                                    />
-                                                    <select
-                                                        className="recurrence-select"
-                                                        value={recurrenceType}
-                                                        onChange={(e) => setRecurrenceType(e.target.value as "hour" | "day" | "week" | "month" | "year")}
-                                                    >
-                                                        <option value="hour">{t("hours") || "hour(s)"}</option>
-                                                        <option value="day">{t("days") || "day(s)"}</option>
-                                                        <option value="week">{t("weeks") || "week(s)"}</option>
-                                                        <option value="month">{t("months") || "month(s)"}</option>
-                                                        <option value="year">{t("years") || "year(s)"}</option>
-                                                    </select>
-                                                </div>
-                                                <div className="recurrence-description">
-                                                    {t("recurrence_description") || "The challenge will automatically restart with the same configuration at the specified interval."}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
                                 )}
                             </div>
                         </section>

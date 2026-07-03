@@ -1070,7 +1070,6 @@
 }
 
 .challenge-modal-field input {
-    width: 100% !important;
     padding: 10px 14px !important;
     border: 1px solid var(--border-color) !important;
     border-radius: 8px !important;
