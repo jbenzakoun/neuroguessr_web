@@ -201,6 +201,13 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+@media (max-width: 768px) { 
+    .current-user-score {
+        padding: 5px 5px;
+        font-size: 0.8rem;
+    }
+}
+
 .current-user-score .position {
     font-size: 13px;
     color: var(--text-muted);

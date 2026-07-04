@@ -181,6 +181,12 @@
         font-size: 0.65rem;
         padding: 8px;
     }
+
+    .guess-button {
+        font-size: 0.75rem;
+        padding: 9px 18px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
 }
 
 @media (max-width: 768px) {
@@ -213,13 +219,31 @@
         max-width: calc(100% - 32px);
     }
 
-    .button-container{
-        padding: 4px;
+    .canvas-and-scroll-container {
+        position: relative;
+    }
 
+    .button-container {
+        /* float over the atlas instead of sitting below it */
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        grid-column: unset;
+        grid-row: unset;
+        padding: 0;
+        gap: 4px;
+        z-index: 50;
+        justify-content: flex-start;
+        align-items: flex-start;
     }
 
     .canvas-and-scroll-container.review-mode .button-container {
+        /* in review mode keep the original grid placement */
+        position: static;
+        grid-column: 1 / span 2;
         grid-row: 3;
+        justify-content: center;
+        padding: 4px;
     }
 }
 

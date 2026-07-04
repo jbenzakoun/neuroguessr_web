@@ -53,7 +53,7 @@ export const BrainViewer = ({ alternateContent, sessionName, sessionDate }: { al
         const prevent = (e: TouchEvent) => { if (e.cancelable) e.preventDefault(); };
         scrollBar.addEventListener('touchmove', prevent, { passive: false });
         return () => scrollBar.removeEventListener('touchmove', prevent);
-    }, [isMobileView, scrollBarRef]);
+    }, [isMobileView, scrollBarRef, isLoading]);
 
     // Ctrl/Cmd + scroll = zoom in navigation mode
     useEffect(() => {

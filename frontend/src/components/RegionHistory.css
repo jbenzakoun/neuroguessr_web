@@ -63,6 +63,12 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+@media (max-width: 768px) { 
+  .sidebar-toggle-button {
+      display: none;
+  }
+}
+
 .region-summary h3 {
   margin: 0;
   font-size: 0.95rem;

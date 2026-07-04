@@ -463,7 +463,6 @@ button { font-family: 'Open Sans', sans-serif; border: none; cursor: pointer; }
     .eye-button,
     .home-button,
     .restart-button {
-        width: 100%;
         justify-content: center;
     }
 }
