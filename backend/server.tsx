@@ -12,6 +12,7 @@ import { register, verifyEmail, passwordLink, resetPassword, validateResetToken 
 import { configUser } from "./modules/config_user.ts";
 import { globalAuthentication } from "./modules/global_auth.ts";
 import type { Config } from "./interfaces/config.interfaces.ts";
+import { assertConfig } from "./interfaces/config.interfaces.ts";
 import configJson from './config.json' with { type: "json" };
 import type {  GetStatsRequest } from "./interfaces/requests.interfaces.ts";
 import { getLeaderboard, getMostUsedAtlases } from "./modules/leaderboard.ts";
@@ -46,6 +47,7 @@ import { getActiveNews, getAllNews, createNews, updateNews, deleteNews } from 'm
 import rateLimit from 'express-rate-limit';
 import { logger } from './modules/logging.ts';
 
+assertConfig(configJson);
 const config: Config = configJson;
 
 const app = express();
