@@ -808,12 +808,14 @@ const MultiPlayer = ({
     if (showAuthRequired) {
       return (
         <div className="waiting-content">
-          <div className="join-multiplayer-box">
-            <h2>{t("classic_challenge_requires_login") || "Classic Challenge Requires Login"}</h2>
-            <p>{t("please_login_or_signup") || "Please log in or sign up to participate in this classic challenge."}</p>
-            <div className="auth-buttons">
-              <a href={`/login?returnURL=${encodeURIComponent(currentPath)}`} className="join-multiplayer-button">{t("sign_in") || "Sign In"}</a>
-              <a href={`/register?returnURL=${encodeURIComponent(currentPath)}`} className="join-multiplayer-button ">{t("sign_up") || "Sign Up"}</a>
+          <div className="waiting-content-left">
+            <div className="join-multiplayer-box">
+              <h2>{t("classic_challenge_requires_login") || "Classic Challenge Requires Login"}</h2>
+              <p>{t("please_login_or_signup") || "Please log in or sign up to participate in this classic challenge."}</p>
+              <div className="auth-buttons">
+                <a href={`/login?returnURL=${encodeURIComponent(currentPath)}`} className="join-multiplayer-button">{t("sign_in") || "Sign In"}</a>
+                <a href={`/register?returnURL=${encodeURIComponent(currentPath)}`} className="join-multiplayer-button ">{t("sign_up") || "Sign Up"}</a>
+              </div>
             </div>
           </div>
         </div>
@@ -824,10 +826,12 @@ const MultiPlayer = ({
     if (error && !isConnected && !isGameRunning) {
       return (
         <div className="waiting-content">
-          <div className="join-multiplayer-box">
-            <h2>{t("join_multiplayer_lobby")}</h2>
-            {challengeTitle && <h2>{challengeTitle}</h2>}
-            <div style={{ color: 'red', marginTop: 16, fontSize: 18 }} dangerouslySetInnerHTML={{__html:error}}></div>
+          <div className="waiting-content-left">
+            <div className="join-multiplayer-box">
+              <h2>{t("join_multiplayer_lobby")}</h2>
+              {challengeTitle && <h2>{challengeTitle}</h2>}
+              <div style={{ color: 'red', marginTop: 16, fontSize: 18 }} dangerouslySetInnerHTML={{__html:error}}></div>
+            </div>
           </div>
         </div>
       );
@@ -837,14 +841,14 @@ const MultiPlayer = ({
         (!isLoggedIn && config.activateAnonymousMode && 
           !isConnected && !askedSessionToken && isClassicChallengeFromCheck !== true && !isCheckingClassicChallenge)) {
       return (<div className="waiting-content">
-        <div className="join-multiplayer-box">
+        <div className="waiting-content-left"><div className="join-multiplayer-box">
           <h2>{t("join_multiplayer_lobby")}</h2>
           <input
             type="text"
             value={inputCode}
             onChange={e => setInputCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
             placeholder={t("multi_8_digits")}
-            style={{ fontSize: 24, letterSpacing: 4, textAlign: 'center', width: 250, border:"1px solid white" }}
+            style={{ fontSize: 24, letterSpacing: 4, textAlign: 'center', minWidth: 250, border:"1px solid white", boxSizing:"border-box" }}
           />
           {!isLoggedIn && config.activateAnonymousMode &&
             <input
@@ -854,7 +858,7 @@ const MultiPlayer = ({
               onChange={e => setAnonUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 16))}
               placeholder={t("placeholder_tempusername")}
               style={{ fontSize: 18, letterSpacing: 4, textAlign: 'center', 
-                width: 250, border:"1px solid white" }}
+                minWidth: 250, border:"1px solid white", boxSizing:"border-box" }}
             />
           }
           <button className="join-multiplayer-button"  data-umami-event="multiplayer join button" onClick={handleConnect}>{t("join_multiplayer_button")}</button>
@@ -863,7 +867,7 @@ const MultiPlayer = ({
         {!isLoggedIn && <div className="multiplayer-suggest-login" 
           dangerouslySetInnerHTML={{__html:t("multi_suggest_login")
           .replace("#",`?redirect=multiplayer-game${(askedSessionCode?`&redirect_asked_session_code=${askedSessionCode}`:"")}${(askedSessionToken?`&redirect_asked_session_token=${askedSessionToken}`:"")}#`)}}></div>}
-      </div>)
+      </div></div>)
     }
 
     if (isConnected && !isGameRunning && isClassicChallenge && !classicChallengeValidated.current) {
@@ -915,28 +919,30 @@ const MultiPlayer = ({
       } else if (!isClassicChallenge) {
         return (
           <div className="waiting-content">
-            <h3>{t("waiting_game_start") || "Waiting for game to start..."}</h3>
-            <div className="waiting-display">
-              <div>
-                <h4>{t("players_in_lobby")}: {lobbyUsers.length}</h4>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {lobbyUsers.map((user, index) => (
-                      <li key={`waiting-user-${index}`} style={{ margin: '5px 0' }}>
-                        {user}
-                      </li>
-                    ))}
-                </ul>
+            <div className="waiting-content-left">
+              <h3>{t("waiting_game_start") || "Waiting for game to start..."}</h3>
+              <div className="waiting-display">
+                <div className="countdown-players-box">
+                  <p className="countdown-players-title">{t("players_in_lobby")}: {lobbyUsers.length}</p>
+                  <ul className="countdown-players-list">
+                      {lobbyUsers.map((user, index) => (
+                        <li key={`waiting-user-${index}`} style={{ margin: '5px 0' }}>
+                          {user}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+                {parameters && <div className="countdown-players-box">
+                  <p className="countdown-players-title">{t("parameters")}</p>
+                  {parameters?.commands && <div>{t("parameters_manual_commands")}</div>}
+                  {!parameters?.commands && parameters?.atlas && <div>{t("parameters_atlas")}: {parameters.atlas}</div>}
+                  {<div>{t("number_regions")}: {parameters.regionsNumber}</div>}
+                  {parameters?.commands && parameters?.totalDuration && <div>{t("parameters_total_duration")}: {Math.floor(parameters.totalDuration / 60)}m {parameters.totalDuration % 60}s</div>}
+                  {!parameters?.commands &&<div>{t("duration_per_region")}: {parameters.durationPerRegion}</div>}
+                  {!parameters?.commands && parameters?.blindMode && <div>{t("blind_mode")}</div>}
+                  {false && parameters?.gameoverOnError && <div>{t("gameover_first_error_activated")}</div>}
+                </div>}
               </div>
-              {parameters && <div>
-                <h4>{t("parameters")}</h4>
-                {parameters?.commands && <div>{t("parameters_manual_commands")}</div>}
-                {!parameters?.commands && parameters?.atlas && <div>{t("parameters_atlas")}: {parameters.atlas}</div>}
-                {<div>{t("number_regions")}: {parameters.regionsNumber}</div>}
-                {parameters?.commands && parameters?.totalDuration && <div>{t("parameters_total_duration")}: {Math.floor(parameters.totalDuration / 60)}m {parameters.totalDuration % 60}s</div>}
-                {!parameters?.commands &&<div>{t("duration_per_region")}: {parameters.durationPerRegion}</div>}
-                {!parameters?.commands && parameters?.blindMode && <div>{t("blind_mode")}</div>}
-                {false && parameters?.gameoverOnError && <div>{t("gameover_first_error_activated")}</div>}
-              </div>}
             </div>
             {error && <div style={{ color: 'red', marginTop: 16 }}>{error}</div>}
             {renderChat()}

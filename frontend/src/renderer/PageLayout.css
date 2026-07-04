@@ -75,8 +75,8 @@ b, strong {
 #root { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
 
 /* Liens sans soulignement par défaut, propre */
-a { color: var(--text-main); text-decoration: none; transition: color 0.2s; cursor: pointer; }
-a:hover { color: var(--accent); text-decoration: none; /* FORCE PAS DE SOULIGNEMENT */ }
+a { color: var(--accent); text-decoration: none; transition: color 0.2s; cursor: pointer; }
+a:hover { color: var(--accent); text-decoration: underline; /* FORCE PAS DE SOULIGNEMENT */ }
 
 /* Inputs plus doux */
 input[type="text"], input[type="email"], input[type="password"] {
