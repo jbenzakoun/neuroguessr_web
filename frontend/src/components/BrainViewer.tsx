@@ -141,7 +141,7 @@ export const BrainViewer = ({ alternateContent, sessionName, sessionDate }: { al
                                 {t("restart_button")}
                             </button>}
                     </div>}
-                {isMobileView && (
+                {isMobileView && !isLoading && (
                     <div className="mobile-controls">
                         {/* Custom scroll bar */}
                         <div

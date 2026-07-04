@@ -265,6 +265,15 @@
     font-size: 0.9rem;
 }
 
+@media (max-width: 768px) { 
+    .advanced-settings-header h3 {
+        font-size: 0.8rem;
+    }
+    .advanced-settings-header select{
+        font-size: 0.8rem;
+    }
+}
+
 .advanced-settings-overall{
     width: 100%;
     display: flex;
@@ -411,6 +420,22 @@
     color: var(--text-muted);
 }
 
+@media (max-width: 768px) { 
+    .atlas-header{
+        gap: 5px;
+    }
+    .atlas-header-left {
+        font-size: 0.75rem;
+    }
+    .atlas-header-right {
+        gap: 5px;
+        justify-content: space-between;
+    }
+    .header-label {
+        font-size: 0.75rem;
+    }
+}
+
 .header-input {
     width: 50px;
     padding: 4px 6px;
@@ -440,6 +465,19 @@
     gap: 10px;
 }
 
+
+@media (max-width: 768px) { 
+    .atlas-block{
+        border: 0;
+        padding: 0;
+        font-size: 0.8rem;
+    }
+    .atlas-block-right {
+        justify-content: space-between;
+        width: 100%;
+    }
+}
+
 .region-block {
     display: flex;
     justify-content: space-between;
@@ -456,6 +494,12 @@
 
 .region-block:nth-child(even) {
     background-color: transparent;
+}
+
+@media (max-width: 768px) { 
+    .region-block{
+        font-size: 0.8rem;
+    }
 }
 
 .region-blocks{
@@ -1256,6 +1300,14 @@
     -moz-appearance: textfield;
 }
 
+@media (max-width: 768px){
+    .adv-number-input {
+        font-size: 0.8rem;
+        padding: 5px 5px;
+        width: 40px;
+    }
+}
+
 /* ── Custom Select Wrapper ── */
 .custom-select-wrapper {
     position: relative;
@@ -1295,6 +1347,14 @@
 }
 .custom-select:focus {
     border-color: var(--accent-color);
+}
+
+
+@media (max-width: 768px) { 
+    .custom-select {
+        font-size: 0.8rem;
+        padding: 6px 10px 6px 10px;
+    }
 }
 
 /* ── Advanced Settings: icon+label action buttons ── */

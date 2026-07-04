@@ -38,6 +38,13 @@
     gap: 70px;
 }
 
+@media (max-width: 768px) { 
+    .waiting-content {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
 .waiting-content h3 {
     margin-bottom: 1rem;
     font-size: 1.5rem;
@@ -381,9 +388,9 @@
     border: 1px solid var(--border-color);
     border-radius: 8px;
     color: var(--text-main);
-    font-size: 12px;
+    font-size: 0.8rem !important;
     font-family: 'Open Sans', sans-serif;
-    padding: 5px 8px;
+    padding: 5px 5px !important;
     outline: none;
 }
 
