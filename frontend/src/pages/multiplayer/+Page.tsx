@@ -106,7 +106,7 @@ const MultiPlayer = ({
   const handleConnect = () => {
     setError(null);
     if (!inputCode.match(/^\d{8}$/)) {
-      setError("Please enter a valid 8-digit code.");
+      setError(t("Invalid session code format. Must be 8 digits."));
       return;
     }
 
@@ -133,7 +133,7 @@ const MultiPlayer = ({
         joinLobby(inputCode)
       })
       .catch(_ => {
-        setError("Failed to check session type.");
+        setError(t("Failed to check session type"));
       });
   }
   const anonUsernameInputRef = useRef<HTMLInputElement>(null);
@@ -205,7 +205,7 @@ const MultiPlayer = ({
       })
       .catch(err => {
         console.error('Error loading replay data:', err);
-        setError(err.message || 'Failed to load replay data');
+        setError(t(err.message) || t('Failed to load replay data'));
       });
   }, [replayId, isLoggedIn, authToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -237,7 +237,7 @@ const MultiPlayer = ({
     // Connection error
     socket.on('connect_error', (err: any) => {
       consoleLog("verbose", `Multiplayer connection error: ${err.message}`);
-      setError(`Connection error: ${err.message}`);
+      setError(`${t("Connection error")}: ${t(err.message)}`);
       joiningInProgressRef.current = false;
       cleanupSocket();
     });
@@ -247,12 +247,14 @@ const MultiPlayer = ({
       let message = data.message || 'An error occurred';
       if(message == "You have already completed this classic challenge"){
         message = t("error_already_completed_challenge", {challengeId: thisClassicChallengeId})  
+      } else {
+        message = t(message)
       }
       setError(message);
       joiningInProgressRef.current = false;
     });
     socket.on('fatal-error', (data: any) => {
-      setError(data.message);
+      setError(t(data.message));
       joiningInProgressRef.current = false;
       cleanupSocket();
     });
@@ -466,7 +468,7 @@ const MultiPlayer = ({
     
     socket.on('session-destroyed', (data: any) => {
       consoleLog("verbose", `Session destroyed: ${data.reason}`);
-      setError(`Session ended: ${data.reason}`);
+      setError(`${t('Session ended')}: ${t(data.reason)}`);
       cleanupSocket();
     });
     
@@ -567,7 +569,7 @@ const MultiPlayer = ({
           if (data.success) {
             consoleLog('verbose', 'Game launched successfully');
           } else {
-            setError(data.message || t('error_launching_game'));
+            setError(t(data.message) || t('error_launching_game'));
           }
         });
       }

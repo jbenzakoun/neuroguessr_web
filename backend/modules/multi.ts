@@ -208,7 +208,7 @@ export async function joinLobby(
         authenticated = true;
       }
     } catch (err) {
-      return { error: "Error: invalid token provided" };
+      return { error: "Invalid token provided" };
     }
   } else {
     if (!config.allowAnonymousInMultiplayer) {
@@ -292,7 +292,7 @@ export async function joinLobby(
     
     if (!anonUpdateResult) {
       logger.warn(`Failed to update anonymous usernames for ${finalUserName} in ${sessionCode}`);
-      return { error: `Failed to update anonymous usernames for ${finalUserName} in ${sessionCode}` };
+      return { error: `Failed to update anonymous usernames` };
     }
   }
 

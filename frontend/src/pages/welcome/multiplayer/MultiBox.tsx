@@ -63,11 +63,11 @@ export function MultiBox() {
             setErrorPublic(null);
         });
         socket.on('connect_error', (err: Error) => {
-            setErrorPublic(`Connection error: ${err.message}`);
+            setErrorPublic(`${t("Connection error")}: ${err.message}`);
             setLoadingPublic(false);
         });
         socket.on('error', (err: any) => {
-            const msg = typeof err === 'string' ? err : (err?.message || 'Socket error');
+            const msg = typeof err === 'string' ? err : (t(err?.message) || t('Socket error'));
             setErrorPublic(msg);
             setLoadingPublic(false);
         });
