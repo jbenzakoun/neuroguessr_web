@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useApp } from "../../../context/AppContext";
 import "./MultiBox.css";
 import { Socket, io } from 'socket.io-client';
+import atlasFiles from '../../../utils/atlas_files';
 
 interface PastGame {
     id: number;
@@ -184,9 +185,9 @@ export function MultiBox() {
                         <div key={game.id} className="multi-past-card">
                             <div className="multi-past-header">
                                 <h3 className="multi-past-name">
-                                    {game.name || game.atlas || t("multiplayer") || "Multijoueur"}
+                                    {game.name || (game.atlas ? atlasFiles[game.atlas]?.name : null) || t("multiplayer") || "Multijoueur"}
                                 </h3>
-                                {game.multiplayerGamesWon && <span className="multi-past-trophy">🏆</span>}
+                                {game.multiplayerGamesWon ? <span className="multi-past-trophy">🏆</span> : null}
                             </div>
                             <p className="multi-past-date">
                                 {game.createdAt ? new Date(game.createdAt).toLocaleDateString() : "–"}
