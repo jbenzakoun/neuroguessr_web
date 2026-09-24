@@ -112,6 +112,14 @@ const atlasFiles : Record<string, {nii: string, json: string, name: string, atla
         difficulty: 2,
         info: false
     },
+    'ghu': {
+        atlas_category: 'cortical_regions',
+        nii: 'ghu_atlas.nii.gz',
+        json: 'ghu_atlas.json',
+        name: 'GHU Atlas',
+        difficulty: 2,
+        info: false
+    },
     'bsa': {
         atlas_category: 'cortical_regions',
         nii: 'bsa_atlas.nii.gz',
@@ -119,7 +127,7 @@ const atlasFiles : Record<string, {nii: string, json: string, name: string, atla
         name: 'BSA Atlas',
         difficulty: 2,
         info: false
-    }
+    },
 };
 
 export default atlasFiles;

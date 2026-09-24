@@ -136,6 +136,7 @@
   "hippoamyg_info": "Amygdale/Hippocampe <span class='atlas-description'>Sous-champs de l'amygdale/hippocampe</span>",
   "territories_info" :"Territoires <span class='atlas-description'>Territoires des artères cérébrales</span>",
   "xtract_info": "Matière Blanche <span class='atlas-description'><Faisceaux de matière blanche (FSL)</span>",
+  "ghu_info" : "GHU Atlas (version beta) <span class='atlas-description'>Régions pédagogiques GHU</span>",
   "bsa_info" : "Brainvisa Sulci Atlas <span class='atlas-description'>Atlas des sillons</span>",
   "info_info" : "Cet atlas vous donnera des informations sur chaque région en mode Navigation",
   "select_language": "Sélectionner la Langue",

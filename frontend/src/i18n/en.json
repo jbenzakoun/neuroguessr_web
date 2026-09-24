@@ -135,6 +135,7 @@
   "hippoamyg_info": "Amygdala/Hippocampus <span class='atlas-description'>Amygdala/Hippocampus subfields</span>",
   "territories_info" :"Territories <span class='atlas-description'>Cerebral Arteries Territories</span>",
   "xtract_info": "White Matter <span class='atlas-description'>FSL's White matter tracts</span>",
+  "ghu_info" : "GHU Atlas (beta version) <span class='atlas-description'>GHU pedagogical regions</span>",
   "bsa_info" : "Brainvisa Sulci Atlas <span class='atlas-description'>Sulci Atlas</span>",
   "info_info" : "This atlas will provide information about each region in Navigation mode",
   "select_language": "Select Language",
